@@ -2,37 +2,47 @@ import { Board } from "./board";
 import { Side, other } from "./side";
 import { Position } from "./position";
 import { Cell } from "./cell";
+import { Constructor, Tagged, Union } from "../../shared/tagged";
 
-type Unplayed = ["unplayed", Board, Side];
-type Played = ["played", Position, Game];
+type Unplayed = Tagged<"unplayed", [Board, Side]>;
+const Unplayed: Constructor<Game, Unplayed> = (...args) => ({
+  tag: "unplayed",
+  args,
+});
+type Played = Tagged<"played", [Position, Game]>;
+const Played: Constructor<Game, Played> = (...args) => ({
+  tag: "played",
+  args,
+});
+type GameVariants = [Unplayed, Played];
+export type Game = Union<GameVariants>;
 
-export type Game = Unplayed | Played;
-
-const snapshot = (game: Game): [Board, Side] => {
-  switch (game[0]) {
+const snapshot = (g: Game): [Board, Side] => {
+  switch (g.tag) {
     case "played": {
-      const [row, column] = Position.indices(game[1]);
-      const [board, side] = snapshot(game[2]);
+      const [position, game] = g.args;
+      const [row, column] = Position.indices(position);
+      const [board, side] = snapshot(game);
       const col = board.get(row);
       const next_board =
-      col == null
-      ? board
-      : board.set(row, col.set(column, Cell.played(side)));
+        col == null
+          ? board
+          : board.set(row, col.set(column, Cell.Played(side)));
       return [next_board, other(side)];
     }
     case "unplayed":
-      return [game[1], game[2]];
+      return g.args;
   }
 };
 
 export const Game = {
-  create: (board: Board): Game => ["unplayed", board, Side.X],
+  create: (board: Board): Game => Unplayed(board, Side.X),
   side: (game: Game): Side => {
-    switch (game[0]) {
+    switch (game.tag) {
       case "played":
-        return other(Game.side(game[2]));
+        return other(Game.side(game.args[1]));
       case "unplayed":
-        return game[2];
+        return game.args[1];
     }
   },
   board: (game: Game): Board => {
@@ -41,8 +51,8 @@ export const Game = {
   play: (position: Position, game: Game): Game => {
     const board = Game.board(game);
     const [row, column] = Position.indices(position);
-    return board.get(row)?.get(column)?.[0] !== "playable"
+    return board.get(row)?.get(column)?.tag !== "playable"
       ? game
-      : ["played", position, game];
+      : Played(position, game);
   },
 };

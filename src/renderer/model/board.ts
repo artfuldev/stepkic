@@ -3,15 +3,19 @@ import { Cell } from "./cell";
 
 export type Board = List<List<Cell>>;
 
+const unplayable = Cell.match({
+  unplayable: () => true,
+  playable: () => false,
+  played: () => true,
+});
+
 export const Board = {
   create: (size: number): Board => {
     return List(
       Array.from({ length: size }, () =>
-        List(Array.from({ length: size }, () => Cell.playable()))
+        List(Array.from({ length: size }, () => Cell.Playable()))
       )
     );
   },
-  full: (board: Board): boolean => {
-    return board.every((row) => row.every((cell) => cell[0] !== "playable"));
-  },
+  full: (board: Board): boolean => board.every((row) => row.every(unplayable)),
 };

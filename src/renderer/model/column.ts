@@ -1,4 +1,11 @@
-export type Column = ["column", string];
+import { Constructor, Tagged } from "../../shared/tagged";
+
+export type Column = Tagged<"column", [string]>;
+
+const _Column: Constructor<Column, Column> = (...args) => ({
+  tag: "column",
+  args,
+});
 
 export const Column = {
   create: (index: number): Column => {
@@ -9,10 +16,10 @@ export const Column = {
       index = Math.floor(index / 26) - 1;
     } while (index >= 0);
 
-    return ["column", result];
+    return _Column(result);
   },
 
-  index: ([, column]: Column): number => {
+  index: ({ args: [column] }: Column): number => {
     let result = 0;
 
     for (let i = 0; i < column.length; i++) {
@@ -22,4 +29,5 @@ export const Column = {
 
     return result - 1;
   },
+  string: ({ args: [column] }: Column): string => column,
 };

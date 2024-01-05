@@ -18,13 +18,13 @@ const win = (positions: Position[], board: Board): Side | undefined => {
     const [row, column] = Position.indices(position);
     const cell = board.get(row)?.get(column);
     if (cell == null) return undefined;
-    if (cell[0] === "playable") return undefined;
-    if (cell[0] === "played") {
+    if (cell.tag === "playable") return undefined;
+    if (cell.tag === "played") {
       if (side == null) {
-        side = cell[1];
+        side = cell.args[0];
         continue;
       }
-      else if (side !== cell[1]) return undefined;
+      else if (side !== cell.args[0]) return undefined;
     }
   }
   return side;

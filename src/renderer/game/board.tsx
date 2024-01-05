@@ -8,23 +8,23 @@ type Props = {
   onPlay: (position: Position) => void;
 };
 
-const disabled = Cell.match(
-  () => true,
-  () => false,
-  () => true
-);
+const disabled = Cell.match({
+  unplayable: () => true,
+  playable: () => false,
+  played: () => true
+});
 
-const color = Cell.match(
-  () => "black",
-  () => "gray",
-  (side) => (side === Side.X ? "red" : "blue")
-);
+const color = Cell.match({
+  unplayable: () => "black",
+  playable: () => "gray",
+  played: (side) => (side === Side.X ? "red" : "blue")
+});
 
-const value = Cell.match(
-  () => "",
-  () => "",
-  (side) => `${side}`
-);
+const value = Cell.match({
+  unplayable: () => "",
+  playable: () => "",
+  played: (side) => `${side}`
+});
 
 const _Board: FC<Props> = ({ highlights, board, onPlay }) => {
   function handleClick(x: number, y: number) {
