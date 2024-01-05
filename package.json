@@ -1,8 +1,8 @@
 {
-  "name": "stepkic",
+  "name": "@artfuldev/stepkic",
   "productName": "stepkic",
-  "version": "1.0.0",
-  "description": "My Electron application description",
+  "version": "0.0.1",
+  "description": "A simple UI for playing tic-tac-toe that supports ST3P engines",
   "main": ".vite/build/main/index.js",
   "scripts": {
     "start": "electron-forge start",
@@ -13,8 +13,8 @@
   },
   "keywords": [],
   "author": {
-    "name": "Sudarsan Balaji",
-    "email": "sudarsan.balaji@artfuldev.com"
+    "name": "Sudarsan Balaji (artfuldev)",
+    "email": "hello@artful.dev"
   },
   "license": "MIT",
   "devDependencies": {
