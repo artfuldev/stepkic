@@ -28,10 +28,10 @@
 
 import React from "react";
 import "./index.css";
+import { Game } from "./game";
+
+
 
 export const App = () => (
-  <>
-    <h1>💖 Hello World!</h1>
-    <p>Welcome to your Electron application.</p>
-  </>
+  <Game />
 );
