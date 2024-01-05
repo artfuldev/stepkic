@@ -26,10 +26,12 @@
  * ```
  */
 
-import { createRoot } from "react-dom/client";
-import { App } from "./app";
+import React from "react";
+import "./index.css";
 
-const app = document.getElementById("app");
-if (app == null) throw new Error("No app element");
-const root = createRoot(app);
-root.render(App());
+export const App = () => (
+  <>
+    <h1>💖 Hello World!</h1>
+    <p>Welcome to your Electron application.</p>
+  </>
+);
