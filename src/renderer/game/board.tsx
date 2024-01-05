@@ -1,8 +1,6 @@
 import React, { FC } from "react";
-import { Cell } from "../model/cell";
 import { Square } from "./square";
-import { Side } from "../model/side";
-import { Board, Position } from "../model";
+import { Board, Position, Cell, Side } from "../model";
 
 type Props = {
   board: Board;

@@ -36,7 +36,7 @@ const _Game: FC<Props> = ({ size }) => {
             case "won":
               return <>Winner: <strong>{other(side)}</strong></>;
             case "started":
-              return <>Side to Play: <strong>{side}</strong></>;
+              return <>Side: <strong>{side}</strong></>;
           }
         })()
       }
@@ -47,8 +47,8 @@ const _Game: FC<Props> = ({ size }) => {
         style={{
           display: "grid",
           gap: "5px",
-          maxWidth: "90vw",
-          maxHeight: "90vh",
+          maxWidth: "80vw",
+          maxHeight: "80vh",
           gridTemplateColumns: `repeat(${size}, 1fr)`,
           gridTemplateRows: `repeat(${size}, 1fr)`,
           aspectRatio: "1/1"
