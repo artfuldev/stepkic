@@ -1,55 +1,55 @@
 import React, { FC } from "react";
-import { Cell } from "./cell";
+import { Cell } from "../model/cell";
 import { Square } from "./square";
-import { calculateWinner } from "./calculate-winner";
-import { Side } from "./side";
+import { Side } from "../model/side";
+import { Board, Position } from "../model";
 
 type Props = {
-  xIsNext: boolean;
-  squares: Cell[];
-  onPlay: (squares: Cell[]) => void;
+  board: Board;
+  highlights: Position[];
+  onPlay: (position: Position) => void;
 };
 
-export const Board: FC<Props> = ({ xIsNext, squares, onPlay }) => {
-  function handleClick(i: number) {
-    if (calculateWinner(squares) || squares[i] !== Cell.Playable) {
-      return;
-    }
-    const nextSquares = squares.slice();
-    if (xIsNext) {
-      nextSquares[i] = Cell.PlayedX;
-    } else {
-      nextSquares[i] = Cell.PlayedO;
-    }
-    onPlay(nextSquares);
-  }
+const disabled = Cell.match(
+  () => true,
+  () => false,
+  () => true
+);
 
-  const winner = calculateWinner(squares);
-  let status;
-  if (winner) {
-    status = "Winner: " + winner;
-  } else {
-    status = "Next player: " + (xIsNext ? Side.X : Side.O);
-  }
+const color = Cell.match(
+  () => "black",
+  () => "gray",
+  (side) => (side === Side.X ? "red" : "blue")
+);
 
-  return (
-    <>
-      <div className="status">{status}</div>
-      <div className="board-row">
-        <Square value={squares[0]} onSquareClick={() => handleClick(0)} />
-        <Square value={squares[1]} onSquareClick={() => handleClick(1)} />
-        <Square value={squares[2]} onSquareClick={() => handleClick(2)} />
-      </div>
-      <div className="board-row">
-        <Square value={squares[3]} onSquareClick={() => handleClick(3)} />
-        <Square value={squares[4]} onSquareClick={() => handleClick(4)} />
-        <Square value={squares[5]} onSquareClick={() => handleClick(5)} />
-      </div>
-      <div className="board-row">
-        <Square value={squares[6]} onSquareClick={() => handleClick(6)} />
-        <Square value={squares[7]} onSquareClick={() => handleClick(7)} />
-        <Square value={squares[8]} onSquareClick={() => handleClick(8)} />
-      </div>
-    </>
+const value = Cell.match(
+  () => "",
+  () => "",
+  (side) => `${side}`
+);
+
+const _Board: FC<Props> = ({ highlights, board, onPlay }) => {
+  function handleClick(x: number, y: number) {
+    onPlay(Position.create(x, y));
+  }
+  const indices = new Set(
+    highlights.map(Position.indices).map(([x, y]) => `${x},${y}`)
   );
+
+  return board.map((row, x) => {
+    return row.map((cell, y) => {
+      return (
+        <Square
+          key={x * 3 + y}
+          value={value(cell)}
+          color={color(cell)}
+          disabled={highlights.length !== 0 || disabled(cell)}
+          highlight={indices.has(`${x},${y}`)}
+          onSquareClick={() => handleClick(x, y)}
+        />
+      );
+    });
+  });
 };
+
+export { _Board as Board };

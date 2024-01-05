@@ -33,5 +33,5 @@ import { Game } from "./game";
 
 
 export const App = () => (
-  <Game />
+  <Game size={3} />
 );

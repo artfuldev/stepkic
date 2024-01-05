@@ -1,45 +1,56 @@
 import React, { FC, useState } from "react";
-import { Cell } from "./cell";
-import { Board } from "./board";
+import { Board as BoardView } from "./board";
+import { Board, Game, Position, State, winning_positions } from "../model";
 
-export const Game: FC = () => {
-  const [history, setHistory] = useState<Cell[][]>([Array(9).fill(Cell.Playable)]);
-  const [currentMove, setCurrentMove] = useState(0);
-  const xIsNext = currentMove % 2 === 0;
-  const currentSquares = history[currentMove];
+type Props = {
+  size: number;
+};
 
-  function handlePlay(nextSquares: Cell[]) {
-    const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
-    setHistory(nextHistory);
-    setCurrentMove(nextHistory.length - 1);
+const _Game: FC<Props> = ({ size }) => {
+  const _board = Board.create(size);
+  const winners = winning_positions(_board);
+  const [state, setState] = useState<State>(
+    State.create(winners, Game.create(_board))
+  );
+  const [, game] = state;
+  const side = Game.side(game);
+  function handlePlay(position: Position) {
+    setState((state) => {
+      switch (state[0]) {
+        case "drawn":
+        case "won":
+          return state;
+        case "started":
+          return State.create(winners, Game.play(position, state[1]));
+      }
+    });
   }
-
-  function jumpTo(nextMove: number) {
-    setCurrentMove(nextMove);
-  }
-
-  const moves = history.map((squares, move) => {
-    let description;
-    if (move > 0) {
-      description = 'Go to move #' + move;
-    } else {
-      description = 'Go to game start';
-    }
-    return (
-      <li key={move}>
-        <button onClick={() => jumpTo(move)}>{description}</button>
-      </li>
-    );
-  });
 
   return (
     <div className="game">
-      <div className="game-board">
-        <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
-      </div>
       <div className="game-info">
-        <ol>{moves}</ol>
+        Side to Play: <strong>{side}</strong>
+      </div>
+      <div style={{ margin: "10px"}} />
+      <div
+        className="game-board"
+        style={{
+          display: "grid",
+          gap: "5px",
+          maxWidth: "90vw",
+          maxHeight: "90vh",
+          gridTemplateColumns: `repeat(${size}, 1fr)`,
+          gridTemplateRows: `repeat(${size}, 1fr)`,
+          aspectRatio: "1/1"
+        }}
+      >
+        <BoardView
+          board={Game.board(game)}
+          highlights={state[0] === "won" ? state[2] : []}
+          onPlay={handlePlay}
+        />
       </div>
     </div>
   );
-}
+};
+export { _Game as Game };
