@@ -1,5 +1,7 @@
 import { Cell } from "./cell";
 
+const played = new Set([Cell.PlayedX, Cell.PlayedO]);
+
 export const calculateWinner = (squares: Cell[]) => {
   const lines = [
     [0, 1, 2],
@@ -14,7 +16,7 @@ export const calculateWinner = (squares: Cell[]) => {
   for (let i = 0; i < lines.length; i++) {
     const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      if (squares[a] === Cell.PlayedX || squares[a] === Cell.PlayedO)
+      if (played.has(squares[a]))
         return squares[a];
     }
   }

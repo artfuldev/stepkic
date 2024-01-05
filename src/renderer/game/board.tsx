@@ -12,9 +12,7 @@ type Props = {
 
 export const Board: FC<Props> = ({ xIsNext, squares, onPlay }) => {
   function handleClick(i: number) {
-    if (
-      calculateWinner(squares) ||
-      squares.every((cell) => ![Cell.Playable, Cell.Unplayable].includes(cell))) {
+    if (calculateWinner(squares) || squares[i] !== Cell.Playable) {
       return;
     }
     const nextSquares = squares.slice();
