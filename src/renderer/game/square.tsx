@@ -19,17 +19,17 @@ export const Square: FC<Props> = ({
     <button
       type="button"
       style={{
-        fontSize: "2rem",
-        background: highlight ? color: "transparent",
+        fontSize: ".5rem",
+        background: color,
         borderColor: color,
-        borderWidth: "20px",
+        borderWidth: "1px",
         color: highlight ? "white" : color,
       }}
       disabled={disabled}
       className="square"
       onClick={onSquareClick}
     >
-      {highlight ? <strong>{value}</strong> : value}
+      {highlight ? value: ""}
     </button>
   );
 };
