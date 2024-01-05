@@ -1,6 +1,6 @@
 import React, { FC, useState } from "react";
 import { Board as BoardView } from "./board";
-import { Board, Game, Position, State, winning_positions } from "../model";
+import { Board, Game, Position, State, other, winning_positions } from "../model";
 
 type Props = {
   size: number;
@@ -28,8 +28,18 @@ const _Game: FC<Props> = ({ size }) => {
 
   return (
     <div className="game">
-      <div className="game-info">
-        Side to Play: <strong>{side}</strong>
+      <div className="game-info"> {
+        (() => {
+          switch (state[0]) {
+            case "drawn":
+              return <>Drawn</>;
+            case "won":
+              return <>Winner: <strong>{other(side)}</strong></>;
+            case "started":
+              return <>Side to Play: <strong>{side}</strong></>;
+          }
+        })()
+      }
       </div>
       <div style={{ margin: "10px"}} />
       <div
