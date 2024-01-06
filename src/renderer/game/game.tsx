@@ -1,6 +1,7 @@
 import React, { FC, useState } from "react";
 import { Board as BoardView } from "./board";
-import { Board, Game, Position, State, other, winning_positions } from "../model";
+import { Board, Game, Position } from "../model";
+import { and, wins, draw, State, Result } from "../rules";
 
 type Props = {
   size: number;
@@ -8,40 +9,37 @@ type Props = {
 
 const _Game: FC<Props> = ({ size }) => {
   const _board = Board.create(size);
-  const winners = winning_positions(_board);
-  const [state, setState] = useState<State>(
-    State.create(winners, Game.create(_board))
-  );
-  const [, game] = state;
+  const _state = State.create(and(wins(_board), draw));
+  const [state, setState] = useState<State>(_state(Game.create(_board)));
+  const [game] = state.args;
   const side = Game.side(game);
   function handlePlay(position: Position) {
-    setState((state) => {
-      switch (state[0]) {
-        case "drawn":
-        case "won":
-          return state;
-        case "started":
-          return State.create(winners, Game.play(position, state[1]));
-      }
-    });
+    setState((state) =>
+      State.match({
+        ended: () => state,
+        started: (game) => _state(Game.play(position, game)),
+      })(state)
+    );
   }
 
   return (
     <div className="game">
-      <div className="game-info"> {
-        (() => {
-          switch (state[0]) {
-            case "drawn":
-              return <>Drawn</>;
-            case "won":
-              return <>Winner: <strong>{other(side)}</strong></>;
-            case "started":
-              return <>Side: <strong>{side}</strong></>;
-          }
-        })()
-      }
+      <div className="game-info">
+        {" "}
+        {State.match({
+          ended: (_, result) =>
+            Result.match({
+              drawn: () => <>Drawn</>,
+              won: (side) => <>Winner: {side}</>,
+            })(result),
+          started: () => (
+            <>
+              Side: <strong>{side}</strong>
+            </>
+          ),
+        })(state)}
       </div>
-      <div style={{ margin: "10px"}} />
+      <div style={{ margin: "10px" }} />
       <div
         className="game-board"
         style={{
@@ -51,12 +49,19 @@ const _Game: FC<Props> = ({ size }) => {
           maxHeight: "80vh",
           gridTemplateColumns: `repeat(${size}, 1fr)`,
           gridTemplateRows: `repeat(${size}, 1fr)`,
-          aspectRatio: "1/1"
+          aspectRatio: "1/1",
         }}
       >
         <BoardView
           board={Game.board(game)}
-          highlights={state[0] === "won" ? state[2] : []}
+          highlights={State.match({
+            ended: (_, result) =>
+              Result.match({
+                drawn: () => [],
+                won: (_, positions) => positions,
+              })(result),
+            started: () => [],
+          })(state)}
           onPlay={handlePlay}
         />
       </div>

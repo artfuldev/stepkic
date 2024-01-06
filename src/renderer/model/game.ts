@@ -21,13 +21,9 @@ const snapshot = (g: Game): [Board, Side] => {
   switch (g.tag) {
     case "played": {
       const [position, game] = g.args;
-      const [row, column] = Position.indices(position);
+      const index = Position.indices(position);
       const [board, side] = snapshot(game);
-      const col = board.get(row);
-      const next_board =
-        col == null
-          ? board
-          : board.set(row, col.set(column, Cell.Played(side)));
+      const next_board = board.setIn(index, Cell.Played(side));
       return [next_board, other(side)];
     }
     case "unplayed":
@@ -49,10 +45,15 @@ export const Game = {
     return snapshot(game)[0];
   },
   play: (position: Position, game: Game): Game => {
-    const board = Game.board(game);
-    const [row, column] = Position.indices(position);
-    return board.get(row)?.get(column)?.tag !== "playable"
-      ? game
-      : Played(position, game);
+    return Cell.match({
+      playable: () => Played(position, game),
+      unplayable: () => game,
+      played: () => game,
+    })(
+      Game.board(game).getIn(
+        Position.indices(position),
+        Cell.Unplayable()
+      ) as Cell
+    );
   },
 };
