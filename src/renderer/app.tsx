@@ -26,12 +26,22 @@
  * ```
  */
 
-import React from "react";
+import React, { FC, useEffect } from "react";
 import "./index.css";
 import { Game } from "./game";
+import { useAppDispatch, useAppSelector } from "./hooks";
+import { increment } from "./reducers/counter";
 
 
 
-export const App = () => (
-  <Game size={3} />
-);
+export const App: FC = () => {
+  const dispatch = useAppDispatch();
+  const counter = useAppSelector((state) => state.counter.value);
+  useEffect(() => {
+    console.log(counter);
+  }, [counter])
+  useEffect(() => {
+    dispatch(increment());
+  }, []);
+  return <Game size={3} />
+};
