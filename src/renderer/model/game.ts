@@ -21,10 +21,11 @@ const snapshot = (g: Game): [Board, Side] => {
   switch (g.tag) {
     case "played": {
       const [position, game] = g.args;
-      const index = Position.indices(position);
       const [board, side] = snapshot(game);
-      const next_board = board.setIn(index, Cell.Played(side));
-      return [next_board, other(side)];
+      return [
+        board.setIn(Position.indices(position), Cell.Played(side)),
+        other(side),
+      ];
     }
     case "unplayed":
       return g.args;
