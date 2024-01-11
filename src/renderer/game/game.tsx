@@ -35,11 +35,6 @@ const _Game: FC<Props> = ({ size }) => {
   const [playable, setPlayable] = useState(false);
 
   useEffect(() => {
-    window.electron.ipcRenderer.on("main", (_, any) => {
-      console.log(any);
-    });
-  }, []);
-  useEffect(() => {
     window.electron.ipcRenderer.send(
       "main",
       NewGameRequested(size, {
@@ -113,7 +108,11 @@ const _Game: FC<Props> = ({ size }) => {
           onPlay={play}
         />
       </div>
-      <div className="game-info">{`Moves: ${moves.map(Position.string)}`}</div>
+      <div className="game-info">
+        {moves.length === 0
+          ? `No moves played yet.`
+          : `Moves: ${moves.map(Position.string)}`}
+      </div>
       <div style={{ margin: "10px" }} />
     </div>
   );
