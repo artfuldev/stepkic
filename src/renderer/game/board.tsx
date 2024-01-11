@@ -43,7 +43,7 @@ const _Board: FC<Props> = ({ highlights, board, onPlay }) => {
           color={color(cell)}
           disabled={highlights.length !== 0 || disabled(cell)}
           highlight={indices.has(`${x},${y}`)}
-          onSquareClick={() => handleClick(x, y)}
+          onClick={() => handleClick(x, y)}
         />
       );
     });

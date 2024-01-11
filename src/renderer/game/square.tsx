@@ -5,7 +5,7 @@ type Props = {
   highlight: boolean;
   color: string;
   disabled: boolean;
-  onSquareClick: () => void;
+  onClick: () => void;
 };
 
 export const Square: FC<Props> = ({
@@ -13,7 +13,7 @@ export const Square: FC<Props> = ({
   color,
   highlight,
   disabled,
-  onSquareClick,
+  onClick,
 }) => {
   return (
     <button
@@ -27,9 +27,9 @@ export const Square: FC<Props> = ({
       }}
       disabled={disabled}
       className="square"
-      onClick={onSquareClick}
+      onClick={onClick}
     >
-      {highlight ? value: ""}
+      {highlight ? value : ""}
     </button>
   );
 };
