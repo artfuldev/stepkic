@@ -54,13 +54,22 @@ export const coordinator = ({ send }: { send: (r: Receivable) => void }) => {
         if (player.tag === "user") send(MoveRequested(side));
         if (player.tag === "engine") {
           const engine = engines[side];
-          engine?.stdin?.write(`move ${str(board)} ${side}\n`);
+          const strb = str(board);
+          console.log("played", strb, side);
+          engine?.stdin?.write(`move ${strb} ${side}\n`);
         }
       },
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      drawn: () => {},
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      won: () => {},
+      drawn: (board) => {
+        console.log("drawn", str(board));
+      },
+      won: (board, side, winners) => {
+        console.log(
+          "won",
+          side,
+          str(board),
+          winners.map(Position.string).join("-")
+        );
+      },
     })(game);
   };
   const handle = (arg: Sendable) => {
