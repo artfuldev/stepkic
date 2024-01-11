@@ -1,0 +1,12 @@
+.move-start::after {
+  content: "    ";
+}
+
+.move-end::after {
+  content: "\A";
+  white-space: pre;
+}
+
+.move-end em {
+  display: none;
+}

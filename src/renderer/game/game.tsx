@@ -6,6 +6,7 @@ import {
   NewGameRequested,
   Receivable,
 } from "../../shared/messaging";
+import { MovesView } from "./moves-view";
 
 type Props = {
   size: number;
@@ -108,11 +109,7 @@ const _Game: FC<Props> = ({ size }) => {
           onPlay={play}
         />
       </div>
-      <div className="game-info">
-        {moves.length === 0
-          ? `No moves played yet.`
-          : `Moves: ${moves.map(Position.string)}`}
-      </div>
+      <MovesView moves={moves} />
       <div style={{ margin: "10px" }} />
     </div>
   );
