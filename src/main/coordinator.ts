@@ -69,6 +69,9 @@ export const coordinator = ({ send }: { send: (r: Receivable) => void }) => {
       case "new-game-requested": {
         processNewGame(...arg.args);
         send(MovesCleared());
+        Object.values(engines).forEach((engine) => {
+          engine?.stdin?.write('quit\n');
+        });
         [Side.X, Side.O].forEach((side) => {
           const player = players[side];
           if (player.tag === "engine") {
