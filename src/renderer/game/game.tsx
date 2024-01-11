@@ -1,6 +1,6 @@
 import React, { FC, useCallback, useEffect, useState } from "react";
 import { Board as BoardView } from "./board";
-import { Board, Game, Position, Side } from "../../shared/model";
+import { Board, Game, Players, Position, Side } from "../../shared/model";
 import {
   MoveAttempted,
   NewGameRequested,
@@ -20,9 +20,9 @@ const statusText = Game.match({
 const _Game: FC<Props> = ({ size }) => {
   const [board, setBoard] = useState(Board.create(size));
   const [status, setStatus] = useState(`Not initialized`);
-  const [players, setPlayers] = useState({
-    [Side.X]: { name: "X", type: "user" },
-    [Side.O]: { name: "O", type: "user" },
+  const [players, setPlayers] = useState<Players>({
+    [Side.X]: { args: ["X"], tag: "user" },
+    [Side.O]: { args: ["O"], tag: "user" },
   });
   const [moves, setMoves] = useState<Position[]>([]);
   const [playable, setPlayable] = useState(false);
@@ -36,8 +36,8 @@ const _Game: FC<Props> = ({ size }) => {
     window.electron.ipcRenderer.send(
       "main",
       NewGameRequested(size, {
-        [Side.X]: { name: "X", type: "user" },
-        [Side.O]: { name: "O", type: "user" },
+        [Side.X]: { args: ["X"], tag: "user" },
+        [Side.O]: { args: ["O"], tag: "user" },
       })
     );
 

@@ -1,5 +1,5 @@
 import { and, draw, wins } from "../shared/rules";
-import { Board, Game, Position, Side } from "../shared/model";
+import { Board, Game, Players, Position, Side } from "../shared/model";
 import {
   GameUpdated,
   MoveMade,
@@ -10,23 +10,13 @@ import {
   Sendable,
 } from "../shared/messaging";
 
-type Player = {
-  name: string;
-  type: "user";
-};
-
-type Players = {
-  [Side.X]: Player;
-  [Side.O]: Player;
-};
-
 export const coordinator = ({ send }: { send: (r: Receivable) => void }) => {
   let board = Board.create(3);
   let rules = and(draw, wins(board));
   let game = Game.create(board);
   let players: Players = {
-    [Side.X]: { name: "X", type: "user" },
-    [Side.O]: { name: "O", type: "user" },
+    [Side.X]: { args: ["X"], tag: "user" },
+    [Side.O]: { args: ["O"], tag: "user" },
   };
   const processNewGame = (size: number, ps: Players) => {
     board = Board.create(size);
@@ -45,7 +35,7 @@ export const coordinator = ({ send }: { send: (r: Receivable) => void }) => {
     Game.match({
       started: (_, side) => {
         const player = players[side];
-        if (player.type === "user") send(MoveRequested(side));
+        if (player.tag === "user") send(MoveRequested(side));
       },
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       drawn: () => {},
