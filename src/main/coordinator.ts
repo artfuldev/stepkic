@@ -1,7 +1,16 @@
 import { and, draw, wins } from "../shared/rules";
-import { Board, Game, Players, Position, Side } from "../shared/model";
+import {
+  Board,
+  Engine,
+  Game,
+  Player,
+  Players,
+  Position,
+  Side,
+} from "../shared/model";
 import {
   GameUpdated,
+  MoveAttempted,
   MoveMade,
   MoveRequested,
   MovesCleared,
@@ -9,6 +18,9 @@ import {
   Receivable,
   Sendable,
 } from "../shared/messaging";
+import { spawn } from 'child_process';
+import { createInterface } from 'readline';
+import { str } from "./t3en/board";
 
 export const coordinator = ({ send }: { send: (r: Receivable) => void }) => {
   let board = Board.create(3);
@@ -17,6 +29,10 @@ export const coordinator = ({ send }: { send: (r: Receivable) => void }) => {
   let players: Players = {
     [Side.X]: { args: ["X"], tag: "user" },
     [Side.O]: { args: ["O"], tag: "user" },
+  };
+  const engines: Record<Side, Required<ReturnType<typeof spawn> | null>> = {
+    [Side.X]: null,
+    [Side.O]: null,
   };
   const processNewGame = (size: number, ps: Players) => {
     board = Board.create(size);
@@ -33,9 +49,13 @@ export const coordinator = ({ send }: { send: (r: Receivable) => void }) => {
   const sendGameUpdates = () => {
     send(GameUpdated(game));
     Game.match({
-      started: (_, side) => {
+      started: (board, side) => {
         const player = players[side];
         if (player.tag === "user") send(MoveRequested(side));
+        if (player.tag === "engine") {
+          const engine = engines[side];
+          engine?.stdin?.write(`move ${str(board)} ${side}\n`);
+        }
       },
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       drawn: () => {},
@@ -43,14 +63,33 @@ export const coordinator = ({ send }: { send: (r: Receivable) => void }) => {
       won: () => {},
     })(game);
   };
-  return (arg: Sendable) => {
+  const handle = (arg: Sendable) => {
     console.log(arg);
     switch (arg.tag) {
       case "new-game-requested": {
         processNewGame(...arg.args);
         send(MovesCleared());
-        [Side.X, Side.O].forEach((side) =>
-          send(PlayerUpdated(side, players[side]))
+        [Side.X, Side.O].forEach((side) => {
+          const player = players[side];
+          if (player.tag === "engine") {
+            const { cwd, process, args  } = player.args[0];
+            const { stdout, stdin } = spawn(process, args, { cwd, stdio: ['pipe', 'pipe', 'inherit'] });
+            const rl = createInterface({ input: stdout });
+            engines[side] = { stdin, stdout } as any;
+            rl.on('line', line => {
+              console.log('<', line);
+              if (line.startsWith('best ')) {
+                const position = Position.parse(line.slice(5));
+                if (position != null) {
+                  handle(MoveAttempted(position));
+                }
+              }
+            });
+            stdin.write('st3p version 1\n');
+            stdin.write('identify\n');
+          }
+          send(PlayerUpdated(side, players[side]));
+        }
         );
         sendGameUpdates();
         break;
@@ -65,4 +104,6 @@ export const coordinator = ({ send }: { send: (r: Receivable) => void }) => {
       }
     }
   };
+
+  return handle;
 };

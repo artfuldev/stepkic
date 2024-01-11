@@ -8,6 +8,7 @@ const _Column: Constructor<Column, Column> = (...args) => ({
 });
 
 export const Column = {
+  from: (col: string): Column => _Column(col),
   create: (index: number): Column => {
     let result = "";
     do {

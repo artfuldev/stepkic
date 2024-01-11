@@ -41,7 +41,19 @@ const _Game: FC<Props> = ({ size }) => {
       "main",
       NewGameRequested(size, {
         [Side.X]: { args: ["X"], tag: "user" },
-        [Side.O]: { args: ["O"], tag: "user" },
+        [Side.O]: {
+          tag: "engine",
+          args: [
+            {
+              cwd: "/Users/sudarsanb/Documents/GitHub/stepkic",
+              process: "docker",
+              args: `run -i --memory=512m --cpus=1.0 random-step`.split(
+                " "
+              ),
+            },
+            { name: "random-step", author: "", version: "", url: "" },
+          ],
+        },
       })
     );
 

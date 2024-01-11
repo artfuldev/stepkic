@@ -1,4 +1,4 @@
-import { Tagged, Union } from "../tagged";
+import { Tagged } from "../tagged";
 
 type EngineIdentification = {
   name: string;
@@ -7,8 +7,5 @@ type EngineIdentification = {
   url: string;
 };
 type ProcessInfo = { cwd: string; process: string; args: string[] };
-type Uninitialized = Tagged<"uninitialized", [ProcessInfo]>;
-type Initialized = Tagged<"initialized", [ProcessInfo, EngineIdentification]>;
-type EngineStateVariants = [Uninitialized, Initialized];
-type EngineState = Union<EngineStateVariants>;
-export type Engine = Tagged<"engine", [EngineState]>;
+export type Engine = Tagged<"engine", [ProcessInfo, EngineIdentification]>;
+ 

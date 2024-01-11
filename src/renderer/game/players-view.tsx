@@ -7,7 +7,7 @@ type Props = {
 
 const name = Player.match({
   user: (name) => name,
-  engine: (a) => a.args[0].args[0],
+  engine: (_, { name }) => name,
 });
 
 export const PlayersView: FC<Props> = ({ players }) => (
