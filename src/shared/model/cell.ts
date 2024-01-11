@@ -1,4 +1,4 @@
-import { Constructor, Match, Tagged, Union } from "../../shared/tagged";
+import { Constructor, Match, Tagged, Union } from "../tagged";
 import { Side } from "./side";
 
 type Unplayable = Tagged<"unplayable", []>;

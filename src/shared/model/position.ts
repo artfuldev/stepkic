@@ -1,4 +1,4 @@
-import { Constructor, Tagged } from "../../shared/tagged";
+import { Constructor, Tagged } from "../tagged";
 import { Column } from "./column";
 import { Row } from "./row";
 

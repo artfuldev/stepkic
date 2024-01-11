@@ -1,9 +1,9 @@
 import React, { FC } from "react";
 import { Square } from "./square";
-import { Board, Position, Cell, Side } from "../model";
+import { Position, Cell, Side } from "../../shared/model";
 
 type Props = {
-  board: Board;
+  board: Cell[][];
   highlights: Position[];
   onPlay: (position: Position) => void;
 };

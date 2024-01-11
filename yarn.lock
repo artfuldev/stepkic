@@ -14,6 +14,24 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
+"@cycle/dom@^23.1.0":
+  version "23.1.0"
+  resolved "https://registry.yarnpkg.com/@cycle/dom/-/dom-23.1.0.tgz#1e28b6d8482b5e56078c22c71f5ac84844726ed4"
+  integrity sha512-BCjSKljAzqv7hYa06UjovqmwdBXPoWcHaackcg+3WG9ZAWOPpl+HrZAFQlbtWGFwDHqZOXckxtnRXueamo52iw==
+  dependencies:
+    "@cycle/run" "^5.2.0"
+    snabbdom "^3.4.0"
+    snabbdom-selector "^5.0.0"
+    xstream "11.x"
+
+"@cycle/run@^5.2.0", "@cycle/run@^5.7.0":
+  version "5.7.0"
+  resolved "https://registry.yarnpkg.com/@cycle/run/-/run-5.7.0.tgz#8ae4e07f96ee7f652eed0f6dd50c9f4143936ce9"
+  integrity sha512-HUsUWCIJxoBcBhkKxiLbUg6mSOIDbDtNvmPUJ4EYoVaJg9jf0wA/ojCmWjAh4Bg6o+lfNlO4c96TANFTreF3Kw==
+  dependencies:
+    quicktask "1.2.0"
+    xstream "10.x || 11.x"
+
 "@electron-forge/cli@^7.2.0":
   version "7.2.0"
   resolved "https://registry.yarnpkg.com/@electron-forge/cli/-/cli-7.2.0.tgz#54349ed2b1cb0e09dd8cff51cf3699b62163ab46"
@@ -246,6 +264,11 @@
     xterm "^4.9.0"
     xterm-addon-fit "^0.5.0"
     xterm-addon-search "^0.8.0"
+
+"@electron-toolkit/preload@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@electron-toolkit/preload/-/preload-3.0.0.tgz#34a801a7038e80fa7dd41cd5d114ce5b0ae3ffc4"
+  integrity sha512-DTyvNGits43J1RiQGFN00/OxjjcTcozLWMjgQBANt97FFptEYiLVasq7kMC24nMwwoOpdDYY9CE6C+4wQJ55/w==
 
 "@electron/asar@^3.2.1", "@electron/asar@^3.2.7":
   version "3.2.8"
@@ -1583,6 +1606,11 @@ electron-installer-redhat@^3.2.0:
     lodash "^4.17.15"
     word-wrap "^1.2.3"
     yargs "^16.0.2"
+
+electron-log@^5.0.3:
+  version "5.0.3"
+  resolved "https://registry.yarnpkg.com/electron-log/-/electron-log-5.0.3.tgz#972e088df24bf09dca980067df48e4eec0e2ec82"
+  integrity sha512-jUgAuRjfpCD9tmH1F6fb195YsFfM/DkqkZLhFeo0VAAstantn11bxmgx63uE6KG/JljHG7sIkgM2QEjDimJI0g==
 
 electron-squirrel-startup@^1.0.0:
   version "1.0.0"
@@ -3715,6 +3743,11 @@ quick-lru@^5.1.1:
   resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-5.1.1.tgz#366493e6b3e42a3a6885e2e99d18f80fb7a8c932"
   integrity sha512-WuyALRjWPDGtt/wzJiadO5AXY+8hZ80hVpe6MyivgraREW751X3SbhRvG3eLKOYN+8VEvqLcf3wdnt44Z4S4SA==
 
+quicktask@1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/quicktask/-/quicktask-1.2.0.tgz#2a418eee255d8093c962c3d5894e48590bf3047c"
+  integrity sha512-LkBLIB8HxauuR6l7SigDZbvdjNWErRfauvCs7Rgp4Xh/oiA89IHTjj/SvUowywXnldISKWIZfxaqs/6lGEB+gw==
+
 range-parser@~1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/range-parser/-/range-parser-1.2.1.tgz#3cf37023d199e1c24d1a55b84800c2f3e6468031"
@@ -4134,6 +4167,18 @@ smart-buffer@^4.2.0:
   resolved "https://registry.yarnpkg.com/smart-buffer/-/smart-buffer-4.2.0.tgz#6e1d71fa4f18c05f7d0ff216dd16a481d0e8d9ae"
   integrity sha512-94hK0Hh8rPqQl2xXc3HsaBoOXKV20MToPkcXvwbISWLEs+64sBq5kFgn2kJDHb1Pry9yrP0dxrCI9RRci7RXKg==
 
+snabbdom-selector@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/snabbdom-selector/-/snabbdom-selector-5.0.0.tgz#b0d296ba61e36c84eaa6506d0a592ba23a11cdad"
+  integrity sha512-bJgpomacLM3jVhghsFxLcws8B6k+GVcnB/Af3avannj/zavIM1vLagvQHTFXzRVkf6nfxYaf/q58gekClDJoYA==
+  dependencies:
+    tree-selector "^2.1.0"
+
+snabbdom@^3.4.0:
+  version "3.5.1"
+  resolved "https://registry.yarnpkg.com/snabbdom/-/snabbdom-3.5.1.tgz#25f80ef15b194baea703d9d5441892e369de18e1"
+  integrity sha512-wHMNIOjkm/YNE5EM3RCbr/+DVgPg6AqQAX1eOxO46zYNvCXjKP5Y865tqQj3EXnaMBjkxmQA5jFuDpDK/dbfiA==
+
 socks-proxy-agent@^7.0.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/socks-proxy-agent/-/socks-proxy-agent-7.0.0.tgz#dc069ecf34436621acb41e3efa66ca1b5fed15b6"
@@ -4308,6 +4353,11 @@ supports-preserve-symlinks-flag@^1.0.0:
   resolved "https://registry.yarnpkg.com/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz#6eda4bd344a3c94aea376d4cc31bc77311039e09"
   integrity sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==
 
+symbol-observable@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/symbol-observable/-/symbol-observable-2.0.3.tgz#5b521d3d07a43c351055fa43b8355b62d33fd16a"
+  integrity sha512-sQV7phh2WCYAn81oAkakC5qjq2Ml0g8ozqz03wOGnx9dDlG1de6yrF+0RAzSJD8fPUow3PTSMf2SAbOGxb93BA==
+
 tar@^6.0.5, tar@^6.1.11, tar@^6.1.2:
   version "6.2.0"
   resolved "https://registry.yarnpkg.com/tar/-/tar-6.2.0.tgz#b14ce49a79cb1cd23bc9b016302dea5474493f73"
@@ -4373,6 +4423,11 @@ tr46@~0.0.3:
   version "0.0.3"
   resolved "https://registry.yarnpkg.com/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
   integrity sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==
+
+tree-selector@^2.1.0:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/tree-selector/-/tree-selector-2.1.1.tgz#644af6c3aa361aabdd8ae545b58f82155884fc17"
+  integrity sha512-NVFYU6YzyUHSMS7+qbhdHlBHG5P9IPjycQa+8MnIBDpq/UWEkMD+lAL/56x7Fty+mAq9SWgtg9D4flZfuOZdDg==
 
 trim-repeated@^1.0.0:
   version "1.0.0"
@@ -4704,6 +4759,14 @@ xmlbuilder@^15.1.1:
   version "15.1.1"
   resolved "https://registry.yarnpkg.com/xmlbuilder/-/xmlbuilder-15.1.1.tgz#9dcdce49eea66d8d10b42cae94a79c3c8d0c2ec5"
   integrity sha512-yMqGBqtXyeN1e3TGYvgNgDVZ3j84W4cwkOXQswghol6APgZWaff9lnbvN7MHYJOiXsvGPXtjTYJEiC9J2wv9Eg==
+
+"xstream@10.x || 11.x", xstream@11.x, xstream@^11.14.0:
+  version "11.14.0"
+  resolved "https://registry.yarnpkg.com/xstream/-/xstream-11.14.0.tgz#2c071d26b18310523b6877e86b4e54df068a9ae5"
+  integrity sha512-1bLb+kKKtKPbgTK6i/BaoAn03g47PpFstlbe1BA+y3pNS/LfvcaghS5BFf9+EE1J+KwSQsEpfJvFN5GqFtiNmw==
+  dependencies:
+    globalthis "^1.0.1"
+    symbol-observable "^2.0.3"
 
 xterm-addon-fit@^0.5.0:
   version "0.5.0"

@@ -1,44 +1,90 @@
-import React, { FC, useState } from "react";
+import React, { FC, useCallback, useEffect, useState } from "react";
 import { Board as BoardView } from "./board";
-import { Board, Game, Position } from "../model";
-import { and, wins, draw, State, Result } from "../rules";
+import { Board, Game, Position, Side } from "../../shared/model";
+import {
+  MoveAttempted,
+  NewGameRequested,
+  Receivable,
+} from "../../shared/messaging";
 
 type Props = {
   size: number;
 };
 
+const statusText = Game.match({
+  started: (_, side) => `${side} to play`,
+  won: (_, side) => `${side} won`,
+  drawn: () => `drawn`,
+});
+
 const _Game: FC<Props> = ({ size }) => {
-  const _board = Board.create(size);
-  const _state = State.create(and(wins(_board), draw));
-  const [state, setState] = useState<State>(_state(Game.create(_board)));
-  const [game] = state.args;
-  const side = Game.side(game);
-  function handlePlay(position: Position) {
-    setState((state) =>
-      State.match({
-        ended: () => state,
-        started: (game) => _state(Game.play(position, game)),
-      })(state)
+  const [board, setBoard] = useState(Board.create(size));
+  const [status, setStatus] = useState(`Not initialized`);
+  const [players, setPlayers] = useState({
+    [Side.X]: { name: "X", type: "user" },
+    [Side.O]: { name: "O", type: "user" },
+  });
+  const [moves, setMoves] = useState<Position[]>([]);
+  const [playable, setPlayable] = useState(false);
+
+  useEffect(() => {
+    window.electron.ipcRenderer.on("main", (_, any) => {
+      console.log(any);
+    });
+  }, []);
+  useEffect(() => {
+    window.electron.ipcRenderer.send(
+      "main",
+      NewGameRequested(size, {
+        [Side.X]: { name: "X", type: "user" },
+        [Side.O]: { name: "O", type: "user" },
+      })
     );
-  }
+
+    return window.electron.ipcRenderer.on("main", (_, message: Receivable) => {
+      switch (message.tag) {
+        case "game-updated": {
+          const game = message.args[0];
+          setBoard(Game.board(game));
+          setStatus(statusText(game));
+          setPlayable(false);
+          break;
+        }
+        case "player-updated": {
+          setPlayers((players) => ({
+            ...players,
+            [message.args[0]]: message.args[1],
+          }));
+          break;
+        }
+        case "move-requested": {
+          setPlayable(true);
+          break;
+        }
+        case "move-made": {
+          setMoves((moves) => moves.concat(message.args[0]));
+          break;
+        }
+        case "moves-cleared": {
+          setMoves([]);
+          break;
+        }
+      }
+    });
+  }, [size]);
+  const play = useCallback(
+    (position: Position) => {
+      if (!playable) return;
+      window.electron.ipcRenderer.send("main", MoveAttempted(position));
+    },
+    [playable]
+  );
 
   return (
     <div className="game">
-      <div className="game-info">
-        {" "}
-        {State.match({
-          ended: (_, result) =>
-            Result.match({
-              drawn: () => <>Drawn</>,
-              won: (side) => <>Winner: {side}</>,
-            })(result),
-          started: () => (
-            <>
-              Side: <strong>{side}</strong>
-            </>
-          ),
-        })(state)}
-      </div>
+      <div className="game-info">{JSON.stringify(players)}</div>
+      <div style={{ margin: "10px" }} />
+      <div className="game-info">{status}</div>
       <div style={{ margin: "10px" }} />
       <div
         className="game-board"
@@ -52,19 +98,10 @@ const _Game: FC<Props> = ({ size }) => {
           aspectRatio: "1/1",
         }}
       >
-        <BoardView
-          board={Game.board(game)}
-          highlights={State.match({
-            ended: (_, result) =>
-              Result.match({
-                drawn: () => [],
-                won: (_, positions) => positions,
-              })(result),
-            started: () => [],
-          })(state)}
-          onPlay={handlePlay}
-        />
+        <BoardView board={board} highlights={[]} onPlay={play} />
       </div>
+      <div className="game-info">{`Moves: ${moves.map(Position.string)}`}</div>
+      <div style={{ margin: "10px" }} />
     </div>
   );
 };

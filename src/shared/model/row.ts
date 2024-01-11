@@ -1,4 +1,4 @@
-import { Constructor, Tagged } from "../../shared/tagged";
+import { Constructor, Tagged } from "../tagged";
 
 export type Row = Tagged<"row", [number]>;
 

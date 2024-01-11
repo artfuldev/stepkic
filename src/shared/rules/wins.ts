@@ -1,12 +1,11 @@
-import { Board, Position, Side } from "../model";
-import { Result } from "./result";
+import { Board, Cell, Game, Position, Side } from "../model";
 import { Rule } from "./rule";
 
 type Index = [number, number];
 
 const winning_positions = (board: Board): Position[][] => {
   const positions: Index[][] = [];
-  const size = board.size;
+  const size = board.length;
   const diagonal: Index[] = [];
   const anti_diagonal: Index[] = [];
   for (let i = 0; i < size; i++) {
@@ -32,8 +31,7 @@ const win = (positions: Position[], board: Board): Side | undefined => {
   let side: Side | undefined = undefined;
   for (const position of positions) {
     const [row, column] = Position.indices(position);
-    const cell = board.get(row)?.get(column);
-    if (cell == null) return undefined;
+    const cell = board[row]?.[column] ?? Cell.Playable();
     if (cell.tag === "playable") return undefined;
     if (cell.tag === "played") {
       if (side == null) {
@@ -45,12 +43,14 @@ const win = (positions: Position[], board: Board): Side | undefined => {
   return side;
 };
 
-export const wins = (board: Board): Rule => {
-  const winners = winning_positions(board);
-  return (board) => {
+export const wins = (_board: Board): Rule => {
+  const winners = winning_positions(_board);
+  return (game) => {
+    const board = Game.board(game);
     for (const winner of winners) {
       const side = win(winner, board);
-      if (side != null) return Result.Won(side, winner);
+      if (side != null) return Game.Won(board, side, winner);
     }
+    return game;
   };
 };
