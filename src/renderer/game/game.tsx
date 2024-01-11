@@ -6,6 +6,7 @@ import {
   NewGameRequested,
   Receivable,
 } from "../../shared/messaging";
+import { PlayersView } from "./players-view";
 import { MovesView } from "./moves-view";
 
 type Props = {
@@ -86,7 +87,7 @@ const _Game: FC<Props> = ({ size }) => {
 
   return (
     <div className="game">
-      <div className="game-info">{JSON.stringify(players)}</div>
+      <PlayersView players={players} />
       <div style={{ margin: "10px" }} />
       <div className="game-info">{status}</div>
       <div style={{ margin: "10px" }} />
