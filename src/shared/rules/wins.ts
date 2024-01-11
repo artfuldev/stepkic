@@ -45,12 +45,16 @@ const win = (positions: Position[], board: Board): Side | undefined => {
 
 export const wins = (_board: Board): Rule => {
   const winners = winning_positions(_board);
-  return (game) => {
-    const board = Game.board(game);
-    for (const winner of winners) {
-      const side = win(winner, board);
-      if (side != null) return Game.Won(board, side, winner);
-    }
-    return game;
-  };
+  return (game) =>
+    Game.match({
+      started: (board) => {
+        for (const winner of winners) {
+          const side = win(winner, board);
+          if (side != null) return Game.Won(board, side, winner);
+        }
+        return game;
+      },
+      won: () => game,
+      drawn: () => game,
+    })(game);
 };
