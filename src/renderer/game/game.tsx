@@ -17,8 +17,15 @@ const statusText = Game.match({
   drawn: () => `drawn`,
 });
 
+const winners = Game.match({
+  started: () => [],
+  drawn: () => [],
+  won: (_, __,positions) => positions,
+})
+
 const _Game: FC<Props> = ({ size }) => {
   const [board, setBoard] = useState(Board.create(size));
+  const [highlights, setHighlights] = useState<Position[]>([]);
   const [status, setStatus] = useState(`Not initialized`);
   const [players, setPlayers] = useState<Players>({
     [Side.X]: { args: ["X"], tag: "user" },
@@ -47,6 +54,7 @@ const _Game: FC<Props> = ({ size }) => {
           const game = message.args[0];
           setBoard(Game.board(game));
           setStatus(statusText(game));
+          setHighlights(winners(game));
           setPlayable(false);
           break;
         }
@@ -98,7 +106,7 @@ const _Game: FC<Props> = ({ size }) => {
           aspectRatio: "1/1",
         }}
       >
-        <BoardView board={board} highlights={[]} onPlay={play} />
+        <BoardView board={board} highlights={highlights} onPlay={play} />
       </div>
       <div className="game-info">{`Moves: ${moves.map(Position.string)}`}</div>
       <div style={{ margin: "10px" }} />
