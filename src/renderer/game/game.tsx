@@ -1,6 +1,6 @@
 import React, { FC, useCallback, useEffect, useState } from "react";
 import { Board as BoardView } from "./board";
-import { Board, Game, Players, Position, Side } from "../../shared/model";
+import { Board, Engine, Game, Players, Position, Side } from "../../shared/model";
 import {
   MoveAttempted,
   NewGameRequested,
@@ -25,6 +25,20 @@ const winners = Game.match({
   won: (_, __, positions) => positions,
 });
 
+const engine: Engine ={
+  tag: "engine",
+  args: [
+    {
+      cwd: "/Users/sudarsanb/Documents/GitHub/stepkic",
+      process: "docker",
+      args: `run -i --memory=512m --cpus=1.0 random-step`.split(
+        " "
+      ),
+    },
+    { name: "random-step", author: "", version: "", url: "" },
+  ],
+}
+
 const _Game: FC<Props> = ({ size }) => {
   const [board, setBoard] = useState(Board.create(size));
   const [highlights, setHighlights] = useState<Position[]>([]);
@@ -40,20 +54,8 @@ const _Game: FC<Props> = ({ size }) => {
     window.electron.ipcRenderer.send(
       "main",
       NewGameRequested(size, {
-        [Side.X]: { args: ["X"], tag: "user" },
-        [Side.O]: {
-          tag: "engine",
-          args: [
-            {
-              cwd: "/Users/sudarsanb/Documents/GitHub/stepkic",
-              process: "docker",
-              args: `run -i --memory=512m --cpus=1.0 random-step`.split(
-                " "
-              ),
-            },
-            { name: "random-step", author: "", version: "", url: "" },
-          ],
-        },
+        [Side.X]: engine,
+        [Side.O]: engine,
       })
     );
 
