@@ -20,8 +20,8 @@ const statusText = Game.match({
 const winners = Game.match({
   started: () => [],
   drawn: () => [],
-  won: (_, __,positions) => positions,
-})
+  won: (_, __, positions) => positions,
+});
 
 const _Game: FC<Props> = ({ size }) => {
   const [board, setBoard] = useState(Board.create(size));
@@ -106,7 +106,12 @@ const _Game: FC<Props> = ({ size }) => {
           aspectRatio: "1/1",
         }}
       >
-        <BoardView board={board} highlights={highlights} onPlay={play} />
+        <BoardView
+          board={board}
+          highlights={highlights}
+          interactive={playable}
+          onPlay={play}
+        />
       </div>
       <div className="game-info">{`Moves: ${moves.map(Position.string)}`}</div>
       <div style={{ margin: "10px" }} />
