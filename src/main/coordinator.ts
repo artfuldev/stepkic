@@ -16,7 +16,7 @@ import { str } from "./t3en/board";
 
 export const coordinator = ({ send }: { send: (r: Receivable) => void }) => {
   let board = Board.create(3);
-  let rules = and(wins(board), draw);
+  let rules = and(wins(board, 5), draw);
   let game = Game.create(board);
   let players: Players = {
     [Side.X]: { args: ["X"], tag: "user" },
@@ -28,7 +28,7 @@ export const coordinator = ({ send }: { send: (r: Receivable) => void }) => {
   };
   const processNewGame = (size: number, ps: Players) => {
     board = Board.create(size);
-    rules = and(wins(board), draw);
+    rules = and(wins(board, 5), draw);
     game = rules(Game.create(board));
     players = ps;
   };
