@@ -1,13 +1,18 @@
 import React, { FC, useCallback, useEffect, useState } from "react";
-import { Board as BoardView } from "./board";
-import { Board, Engine, Game, Players, Position, Side } from "../../shared/model";
+import {
+  Board,
+  Engine,
+  Game,
+  Players,
+  Position,
+  Side,
+} from "../../shared/model";
 import {
   MoveAttempted,
   NewGameRequested,
   Receivable,
 } from "../../shared/messaging";
-import { PlayersView } from "./players-view";
-import { MovesView } from "./moves-view";
+import { GameView } from "./game-view";
 
 type Props = {
   size: number;
@@ -25,28 +30,28 @@ const winners = Game.match({
   won: (_, __, positions) => positions,
 });
 
-const engine: Engine ={
+const engine: Engine = {
   tag: "engine",
   args: [
     {
       cwd: "/Users/sudarsanb/Documents/GitHub/stepkic",
       process: "docker",
-      args: `run -i --memory=512m --cpus=1.0 random-step`.split(
-        " "
-      ),
+      args: `run -i --memory=512m --cpus=1.0 random-step`.split(" "),
     },
-    { name: "random-step", author: "", version: "", url: "" },
+    { name: "random-step", author: "artfuldev", version: "2.1.0", url: "" },
   ],
-}
+};
+
+const _players: Players = {
+  [Side.X]: { args: ["Player X"], tag: "user" },
+  [Side.O]: { args: ["Player O"], tag: "user" },
+};
 
 const _Game: FC<Props> = ({ size }) => {
   const [board, setBoard] = useState(Board.create(size));
   const [highlights, setHighlights] = useState<Position[]>([]);
   const [status, setStatus] = useState(`Not initialized`);
-  const [players, setPlayers] = useState<Players>({
-    [Side.X]: { args: ["X"], tag: "user" },
-    [Side.O]: { args: ["O"], tag: "user" },
-  });
+  const [players, setPlayers] = useState<Players>(_players);
   const [moves, setMoves] = useState<Position[]>([]);
   const [playable, setPlayable] = useState(false);
 
@@ -54,6 +59,7 @@ const _Game: FC<Props> = ({ size }) => {
     window.electron.ipcRenderer.send(
       "main",
       NewGameRequested(size, {
+        ..._players,
         [Side.X]: engine,
         [Side.O]: engine,
       })
@@ -100,33 +106,16 @@ const _Game: FC<Props> = ({ size }) => {
   );
 
   return (
-    <div className="game">
-      <PlayersView players={players} />
-      <div style={{ margin: "10px" }} />
-      <div className="game-info">{status}</div>
-      <div style={{ margin: "10px" }} />
-      <div
-        className="game-board"
-        style={{
-          display: "grid",
-          gap: "5px",
-          maxWidth: "80vw",
-          maxHeight: "80vh",
-          gridTemplateColumns: `repeat(${size}, 1fr)`,
-          gridTemplateRows: `repeat(${size}, 1fr)`,
-          aspectRatio: "1/1",
-        }}
-      >
-        <BoardView
-          board={board}
-          highlights={highlights}
-          interactive={playable}
-          onPlay={play}
-        />
-      </div>
-      <MovesView moves={moves} />
-      <div style={{ margin: "10px" }} />
-    </div>
+    <GameView
+      size={size}
+      play={play}
+      playable={playable}
+      players={players}
+      moves={moves}
+      status={status}
+      board={board}
+      highlights={highlights}
+    />
   );
 };
 export { _Game as Game };
