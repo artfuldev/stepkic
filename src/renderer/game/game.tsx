@@ -19,9 +19,9 @@ type Props = {
 };
 
 const statusText = Game.match({
-  started: (_, side) => `${side} to play`,
-  won: (_, side) => `${side} won`,
-  drawn: () => `drawn`,
+  started: (_, side) => `${side} to play :o`,
+  won: (_, side) => `${side} won! :)`,
+  drawn: () => `drawn :|`,
 });
 
 const winners = Game.match({
