@@ -60,7 +60,7 @@ const _Game: FC<Props> = ({ size }) => {
       "main",
       NewGameRequested(size, {
         ..._players,
-        [Side.X]: engine,
+        // [Side.X]: engine,
         [Side.O]: engine,
       })
     );
