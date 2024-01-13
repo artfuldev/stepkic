@@ -1,0 +1,19 @@
+.player {
+  border: 1px solid #000;
+  padding: 20px;
+  margin: 20px;
+}
+
+.player.x {
+  border-color: red;
+  color: red;
+}
+
+.player.o {
+  border-color: blue;
+  color: blue;
+}
+
+.player .name {
+  font-weight: bold;
+}
