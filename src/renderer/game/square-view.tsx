@@ -8,7 +8,7 @@ type Props = {
   onClick: () => void;
 };
 
-export const Square: FC<Props> = ({
+export const SquareView: FC<Props> = ({
   value,
   color,
   highlight,
