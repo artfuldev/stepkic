@@ -10,14 +10,9 @@
   color: var(--color);
 }
 
-.square::after {
+.square.highlighted::after {
   position: absolute;
   content: "•";
   color: white;
   align-self: center;
-  opacity: 0;
-}
-
-.square.highlighted::after {
-  opacity: 1;
 }
