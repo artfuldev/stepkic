@@ -25,7 +25,7 @@ export const BoardView: FC<Props> = ({
 
   const cells: BoardCell[][] = [
     Array.from({ length: size + 1 }).map((_, i) =>
-      BoardCell.Index(Column.string(Column.create(i - 1)))
+      BoardCell.Index(i === 0 ? "" : Column.string(Column.create(i - 1)))
     ),
   ].concat(
     board.map((row, x) =>
