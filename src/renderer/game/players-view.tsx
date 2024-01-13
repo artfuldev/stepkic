@@ -1,7 +1,6 @@
 import React, { FC } from "react";
 import { Players, Side } from "../../shared/model";
 import { PlayerView } from "./player-view";
-import "./players-view.css";
 
 type Props = {
   players: Players;
