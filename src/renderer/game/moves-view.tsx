@@ -29,13 +29,13 @@ export const MovesView: FC<Props> = ({ moves }) => (
           Move.match({
             pending: (number, x) => (
               <div key={number} className="move pending">
-                <div className="number">{number}.</div>
+                <div className="number">{number}</div>
                 <div className="notation x">{Position.string(x)}</div>
               </div>
             ),
             played: (number, x, o) => (
               <div key={number} className="move played">
-                <div className="number">{number}.</div>
+                <div className="number">{number}</div>
                 <div className="notation x">{Position.string(x)}</div>
                 <div className="notation o">{Position.string(o)}</div>
               </div>

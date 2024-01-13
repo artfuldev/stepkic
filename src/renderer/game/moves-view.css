@@ -17,6 +17,15 @@
   grid-template-columns: 1fr 1fr 1fr 1fr;
 }
 
-.moves .move .x, .moves .move .o {
+.moves .move .notation {
   font-family: 'Courier New', Courier, monospace;
+}
+
+.moves .move .number {
+  padding-right: 20px;
+  text-align: right;
+}
+
+.moves .move .number::after {
+  content: ".";
 }
