@@ -34,8 +34,7 @@ const engine: Engine = {
   tag: "engine",
   args: [
     {
-      cwd: "/Users/sudarsanb/Documents/GitHub/stepkic",
-      process: "docker",
+      command: "docker",
       args: `run -i --memory=512m --cpus=1.0 random-step`.split(" "),
     },
     { name: "random-step", author: "artfuldev", version: "2.1.0", url: "" },

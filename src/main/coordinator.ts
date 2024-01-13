@@ -75,7 +75,7 @@ export const coordinator = ({ send }: { send: (r: Receivable) => void }) => {
         [Side.X, Side.O].forEach((side) => {
           const player = players[side];
           if (player.tag === "engine") {
-            const { cwd, process, args } = player.args[0];
+            const { cwd, command: process, args } = player.args[0];
             const { stdout, stdin } = spawn(process, args, {
               cwd,
               stdio: ["pipe", "pipe", "inherit"],

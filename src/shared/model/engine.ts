@@ -6,6 +6,5 @@ type EngineIdentification = {
   author: string;
   url: string;
 };
-type ProcessInfo = { cwd: string; process: string; args: string[] };
+type ProcessInfo = { cwd?: string; command: string; args: string[] };
 export type Engine = Tagged<"engine", [ProcessInfo, EngineIdentification]>;
- 
