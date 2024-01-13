@@ -16,3 +16,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
 }
+
+.moves .move .x, .moves .move .o {
+  font-family: 'Courier New', Courier, monospace;
+}
