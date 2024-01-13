@@ -1,12 +1,18 @@
-.move-start::after {
-  content: "    ";
+.moves {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
-.move-end::after {
-  content: "\A";
-  white-space: pre;
+.moves .list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  height: 100%;
 }
 
-.move-end em {
-  display: none;
+.moves .move {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
 }

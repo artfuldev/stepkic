@@ -20,11 +20,16 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 40px;
 }
 
 .sidebar {
   grid-area: sidebar;
-  overflow-y: auto;
+  overflow: hidden;
+  border-left: 1px solid #ccc;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
 }
 
 .footer {
