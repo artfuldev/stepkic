@@ -19,9 +19,11 @@ export const SquareView: FC<Props> = ({
     <button
       type="button"
       style={{
-        fontSize: ".5rem",
+        fontSize: "2rem",
+        fontWeight: "bold",
+        borderStyle: "solid",
         background: color,
-        borderColor: color,
+        borderColor: "lightgray",
         borderWidth: "1px",
         color: highlight ? "white" : color,
       }}
@@ -29,7 +31,7 @@ export const SquareView: FC<Props> = ({
       className="square"
       onClick={onClick}
     >
-      {highlight ? value : ""}
+      {highlight ? "•" : ""}
     </button>
   );
 };
