@@ -4,7 +4,7 @@ import { Rule } from "./rule";
 type Index = [number, number];
 
 const winning_positions = (board: Board, length?: number): Position[][] => {
-  if (length == null) length = board.length;
+  if (length == null || length > board.length) length = board.length;
   const positions: Index[][] = [];
   const diagonal: Index[] = [];
   const anti_diagonal: Index[] = [];
