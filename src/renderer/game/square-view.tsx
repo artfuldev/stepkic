@@ -1,4 +1,5 @@
 import React, { FC } from "react";
+import "./square-view.css";
 
 type Props = {
   highlight: boolean;
@@ -15,21 +16,14 @@ export const SquareView: FC<Props> = ({
 }) => {
   return (
     <button
+      title={""}
       type="button"
       style={{
-        fontSize: "2rem",
-        fontWeight: "bold",
-        borderStyle: "solid",
-        background: color,
-        borderColor: "lightgray",
-        borderWidth: "1px",
-        color: highlight ? "white" : color,
+        "--color": color,
       }}
       disabled={disabled}
-      className="square"
+      className={`square ${highlight ? "highlighted" : ""}`}
       onClick={onClick}
-    >
-      {highlight ? "•" : ""}
-    </button>
+    />
   );
 };

@@ -1,0 +1,23 @@
+.square {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: 1.5rem;
+  border: 1px solid lightgray;
+  background: var(--color);
+  color: var(--color);
+}
+
+.square::after {
+  position: absolute;
+  content: "•";
+  color: white;
+  align-self: center;
+  opacity: 0;
+}
+
+.square.highlighted::after {
+  opacity: 1;
+}
