@@ -1,6 +1,7 @@
 export * from "./side";
 export * from "./cell";
 export * from "./board";
+export * from "./column";
 export * from "./position";
 export * from "./game";
 export * from "./engine";
