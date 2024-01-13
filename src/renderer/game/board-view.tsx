@@ -60,7 +60,6 @@ export const BoardView: FC<Props> = ({
             square: (cell, position) => (
               <SquareView
                 key={x * (size + 1) + y}
-                value={BoardCell.value(cell)}
                 color={BoardCell.color(cell)}
                 disabled={!interactive || BoardCell.disabled(cell)}
                 highlight={false}
@@ -70,7 +69,6 @@ export const BoardView: FC<Props> = ({
             highlighted: (cell, position) => (
               <SquareView
                 key={x * (size + 1) + y}
-                value={BoardCell.value(cell)}
                 color={BoardCell.color(cell)}
                 disabled={!interactive || BoardCell.disabled(cell)}
                 highlight={true}

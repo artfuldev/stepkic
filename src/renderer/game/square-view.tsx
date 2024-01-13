@@ -1,7 +1,6 @@
 import React, { FC } from "react";
 
 type Props = {
-  value: string;
   highlight: boolean;
   color: string;
   disabled: boolean;
@@ -9,7 +8,6 @@ type Props = {
 };
 
 export const SquareView: FC<Props> = ({
-  value,
   color,
   highlight,
   disabled,

@@ -1,6 +1,6 @@
 import { Cell, Position, Side } from "../../shared/model";
-import "./board-view.css";
 import { Constructor, Match, Tagged, Union } from "../../shared/tagged";
+import "./board-view.css";
 
 const disabled = Cell.match({
   unplayable: () => true,
@@ -12,12 +12,6 @@ const color = Cell.match({
   unplayable: () => "black",
   playable: () => "light-gray",
   played: (side) => (side === Side.X ? "red" : "blue"),
-});
-
-const value = Cell.match({
-  unplayable: () => "",
-  playable: () => "",
-  played: (side) => `${side}`,
 });
 
 type Index = Tagged<"index", [string]>;
@@ -56,5 +50,4 @@ export const BoardCell = {
   match,
   color,
   disabled,
-  value,
 };
