@@ -1,5 +1,5 @@
 import { Cell, Position, Side } from "../../shared/model";
-import { Constructor, Tagged, Union, match } from "../../shared/tagged";
+import { constructor, Tagged, Union, match } from "../../shared/tagged";
 import "./board-view.css";
 
 const disabled = Cell.match({
@@ -15,27 +15,15 @@ const color = Cell.match({
 });
 
 type Index = Tagged<"index", [string]>;
-const Index: Constructor<BoardCell, Index> = (index: string) => ({
-  tag: "index",
-  args: [index],
-});
 type Square = Tagged<"square", [Cell, Position]>;
-const Square: Constructor<BoardCell, Square> = (...args) => ({
-  tag: "square",
-  args,
-});
 type Highlighted = Tagged<"highlighted", [Cell, Position]>;
-const Highlighted: Constructor<BoardCell, Highlighted> = (...args) => ({
-  tag: "highlighted",
-  args,
-});
 type BoardCells = [Index, Square, Highlighted];
 export type BoardCell = Union<BoardCells>;
 
 export const BoardCell = {
-  Index,
-  Square,
-  Highlighted,
+  Index: constructor<BoardCells, Index>("index"),
+  Square: constructor<BoardCells, Square>("square"),
+  Highlighted: constructor<BoardCells, Highlighted>("highlighted"),
   match: match<BoardCells>(),
   color,
   disabled,

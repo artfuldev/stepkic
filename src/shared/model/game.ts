@@ -2,32 +2,20 @@ import { Board } from "./board";
 import { Side, other } from "./side";
 import { Position } from "./position";
 import { Cell } from "./cell";
-import { Constructor, Match, Tagged, Union, match } from "../tagged";
+import { constructor, Tagged, Union, match } from "../tagged";
 
 type Started = Tagged<"started", [Board, Side]>;
-const Started: Constructor<Game, Started> = (...args) => ({
-  tag: "started",
-  args,
-});
 type Won = Tagged<"won", [Board, Side, Position[]]>;
-const Won: Constructor<Game, Won> = (...args) => ({
-  tag: "won",
-  args,
-});
 type Drawn = Tagged<"drawn", [Board]>;
-const Drawn: Constructor<Game, Drawn> = (...args) => ({
-  tag: "drawn",
-  args,
-});
 type GameVariants = [Started, Won, Drawn];
 export type Game = Union<GameVariants>;
 
 const _match = match<GameVariants>();
 
 export const Game = {
-  Started,
-  Won,
-  Drawn,
+  Started: constructor<GameVariants, Started>("started"),
+  Won: constructor<GameVariants, Won>("won"),
+  Drawn: constructor<GameVariants, Drawn>("drawn"),
   create: (board: Board): Game => Game.Started(board, Side.X),
   match: _match,
   board: _match({
@@ -46,7 +34,7 @@ export const Game = {
           const cell = board[x]?.[y] ?? Cell.Unplayable();
           return Cell.match({
             playable: () =>
-              Started(
+              Game.Started(
                 board.map((row, i) =>
                   i === x
                     ? row.map((cell, j) => (j === y ? Cell.Played(side) : cell))

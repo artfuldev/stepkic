@@ -13,6 +13,11 @@ export type Handler<T, R> = (...args: Args<T>) => R;
 
 export type Constructor<T, V extends T> = Handler<V, T>;
 
+export const constructor =
+  <V extends Tagged<string, unknown[]>[], T extends V[number]>(tag: T["tag"]) =>
+  (...args: T["args"]): Union<V> =>
+    ({ tag, args } as any);
+
 type CataFnArgs<T, V, R> = V extends Tagged<string, infer A>
   ? { [K in keyof A]: If<Equals<T, A[K]>, R, A[K]> }
   : never;

@@ -1,31 +1,15 @@
-import { Constructor, Tagged, Union, match } from "../tagged";
+import { constructor, Tagged, Union, match } from "../tagged";
 import { Side } from "./side";
 
 type Unplayable = Tagged<"unplayable", []>;
-const Unplayable: Constructor<Cell, Unplayable> = () => ({
-  tag: "unplayable",
-  args: [],
-});
-
 type Playable = Tagged<"playable", []>;
-const Playable: Constructor<Cell, Playable> = () => ({
-  tag: "playable",
-  args: [],
-});
-
 type Played = Tagged<"played", [Side]>;
-const Played: Constructor<Cell, Played> = (...args) => ({
-  tag: "played",
-  args,
-});
-
 type CellStates = [Unplayable, Playable, Played];
-
 export type Cell = Union<CellStates>;
 
 export const Cell = {
-  Unplayable,
-  Playable,
-  Played,
+  Unplayable: constructor<CellStates, Unplayable>("unplayable"),
+  Playable: constructor<CellStates, Playable>("playable"),
+  Played: constructor<CellStates, Played>("played"),
   match: match<CellStates>(),
 };
