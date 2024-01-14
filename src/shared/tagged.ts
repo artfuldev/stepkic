@@ -82,3 +82,9 @@ type MatchArg<V extends Tagged<string, unknown[]>[], R> = {
 export type Match<V extends Tagged<string, unknown[]>[]> = <R>(
 	arg: MatchArg<V, R>
 ) => (union: Union<V>) => R;
+
+export const match =
+  <V extends Tagged<string, unknown[]>[]>(): Match<V> =>
+  (matcher) =>
+  (union) =>
+    (matcher as any)[union.tag](...union.args);

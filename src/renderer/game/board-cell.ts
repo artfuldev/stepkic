@@ -1,5 +1,5 @@
 import { Cell, Position, Side } from "../../shared/model";
-import { Constructor, Match, Tagged, Union } from "../../shared/tagged";
+import { Constructor, Tagged, Union, match } from "../../shared/tagged";
 import "./board-view.css";
 
 const disabled = Cell.match({
@@ -32,22 +32,11 @@ const Highlighted: Constructor<BoardCell, Highlighted> = (...args) => ({
 type BoardCells = [Index, Square, Highlighted];
 export type BoardCell = Union<BoardCells>;
 
-const match: Match<BoardCells> = (matcher) => (cell) => {
-  switch (cell.tag) {
-    case "index":
-      return matcher.index(...cell.args);
-    case "square":
-      return matcher.square(...cell.args);
-    case "highlighted":
-      return matcher.highlighted(...cell.args);
-  }
-};
-
 export const BoardCell = {
   Index,
   Square,
   Highlighted,
-  match,
+  match: match<BoardCells>(),
   color,
   disabled,
 };
