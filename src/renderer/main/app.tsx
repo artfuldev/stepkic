@@ -43,5 +43,5 @@ export const App: FC = () => {
   useEffect(() => {
     dispatch(increment());
   }, []);
-  return <Game size={3} />
+  return <Game size={15} />
 };

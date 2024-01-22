@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 import { SquareView } from "./square-view";
-import { Position, Cell, Column } from "../../shared/model";
+import { Position, Cell, Column } from "../../../shared/model";
 import { BoardCell } from "./board-cell";
 import "./board-view.css";
 

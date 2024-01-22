@@ -14,7 +14,12 @@ import { spawn } from "child_process";
 import { createInterface } from "readline";
 import { str } from "./t3en/board";
 
-export const coordinator = ({ send }: { send: (r: Receivable) => void }) => {
+type Inputs = {
+  send: (r: Receivable) => void;
+  // store: ReturnType<typeof api>;
+};
+
+export const coordinator = ({ send }: Inputs) => {
   let board = Board.create(3);
   let rules = and(wins(board, 5), draw);
   let game = Game.create(board);

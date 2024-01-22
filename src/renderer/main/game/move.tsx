@@ -1,5 +1,5 @@
-import { Position } from "../../shared/model";
-import { constructor, match, Tagged, Union } from "../../shared/tagged";
+import { Position } from "../../../shared/model";
+import { constructor, match, Tagged, Union } from "../../../shared/tagged";
 
 type Pending = Tagged<"pending", [number, Position]>;
 type Played = Tagged<"played", [number, Position, Position]>;

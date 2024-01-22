@@ -1,5 +1,5 @@
-import { Cell, Position, Side } from "../../shared/model";
-import { constructor, Tagged, Union, match } from "../../shared/tagged";
+import { Cell, Position, Side } from "../../../shared/model";
+import { constructor, Tagged, Union, match } from "../../../shared/tagged";
 import "./board-view.css";
 
 const disabled = Cell.match({

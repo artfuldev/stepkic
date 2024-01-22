@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import { Players, Side } from "../../shared/model";
+import { Players, Side } from "../../../shared/model";
 import { PlayerView } from "./player-view";
 
 type Props = {

@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import { Position } from "../../shared/model";
+import { Position } from "../../../shared/model";
 import { Move } from "./move";
 import "./moves-view.css";
 

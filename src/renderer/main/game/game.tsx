@@ -6,12 +6,12 @@ import {
   Players,
   Position,
   Side,
-} from "../../shared/model";
+} from "../../../shared/model";
 import {
   MoveAttempted,
   NewGameRequested,
   Receivable,
-} from "../../shared/messaging";
+} from "../../../shared/messaging";
 import { GameView } from "./game-view";
 
 type Props = {
@@ -59,7 +59,7 @@ const _Game: FC<Props> = ({ size }) => {
       "main",
       NewGameRequested(size, {
         ..._players,
-        // [Side.X]: engine,
+        [Side.X]: engine,
         [Side.O]: engine,
       })
     );

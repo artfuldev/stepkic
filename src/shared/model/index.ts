@@ -7,3 +7,5 @@ export * from "./game";
 export * from "./engine";
 export * from "./player";
 export * from "./players";
+export * from "./process-info";
+export * from "./engine-info";

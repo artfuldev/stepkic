@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 import { BoardView } from "./board-view";
-import { Board, Players, Position } from "../../shared/model";
+import { Board, Players, Position } from "../../../shared/model";
 import { PlayersView } from "./players-view";
 import { MovesView } from "./moves-view";
 import "./game-view.css";
