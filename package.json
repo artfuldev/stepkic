@@ -39,12 +39,11 @@
   },
   "dependencies": {
     "@carbon/icons-react": "^11.34.1",
-    "@carbon/react": "1.33.0",
+    "@carbon/react": "^1.48.1",
     "@cycle/dom": "^23.1.0",
     "@cycle/run": "^5.7.0",
     "@electron-toolkit/preload": "^3.0.0",
     "@reduxjs/toolkit": "^2.0.1",
-    "@tanstack/react-table": "^8.11.6",
     "better-sqlite3": "^9.2.2",
     "electron-log": "^5.0.3",
     "electron-squirrel-startup": "^1.0.0",

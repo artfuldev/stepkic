@@ -1,37 +1,15 @@
 import React, { FC, useEffect, useState } from "react";
-import { EngineInfo } from "../../shared/model";
+import { EngineInfo, ProcessInfo } from "../../shared/model";
 import { Response } from "../../shared/messaging/engines/response";
-import {
-  createColumnHelper,
-  getCoreRowModel,
-  useReactTable,
-  flexRender,
-} from "@tanstack/react-table";
 import { Request } from "../../shared/messaging/engines/request";
+import { EnginesView } from "./engines-view";
+import { AddEngine } from "./add-engine";
 import "./global.scss";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@carbon/react";
-
-const helper = createColumnHelper<EngineInfo>();
 
 export const App: FC = () => {
   const [engines, setEngines] = useState<[string, EngineInfo][]>([]);
-  const data = engines.map(([, info]) => info);
-  const table = useReactTable({
-    data,
-    columns: [
-      helper.accessor("name", {}),
-      helper.accessor("version", {}),
-      helper.accessor("author", {}),
-    ],
-    getCoreRowModel: getCoreRowModel(),
-  });
+  const data = engines.map(([id, info]) => ({ ...info, id }));
+
   useEffect(() => {
     return window.electron.ipcRenderer.on(
       "engines",
@@ -40,54 +18,26 @@ export const App: FC = () => {
       }
     );
   }, []);
+
   useEffect(() => {
     window.electron.ipcRenderer.send("engines", Request.List());
   }, []);
-  useEffect(() => {
-    window.electron.ipcRenderer.send(
-      "engines",
-      Request.Create({
-        command: "docker",
-        args: `run -i --memory=512m --cpus=1.0 random-step:v2.2.0`.split(" "),
-      })
-    );
-  }, []);
+
+  const onDelete = (id: string) =>
+    window.electron.ipcRenderer.send("engines", Request.Delete(id));
+  const onAdd = (info: ProcessInfo) =>
+    window.electron.ipcRenderer.send("engines", Request.Create(info));
+
+  const [open, setOpen] = useState(false);
+
   return (
-    <div>
-      <main>
-        <h4>Engines</h4>
-        <Table>
-          <TableHead>
-            <TableRow>
-              {table
-                .getHeaderGroups()
-                .map((headerGroup) =>
-                  headerGroup.headers.map((header) => (
-                    <TableHeader key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHeader>
-                  ))
-                )}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </main>
-    </div>
+    <>
+      <AddEngine open={open} setOpen={setOpen} onAdd={onAdd} />
+      <EnginesView
+        engines={data}
+        onAdd={() => setOpen(true)}
+        onDelete={onDelete}
+      />
+    </>
   );
 };
