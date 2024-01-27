@@ -8,6 +8,15 @@ import {
   flexRender,
 } from "@tanstack/react-table";
 import { Request } from "../../shared/messaging/engines/request";
+import "./global.scss";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@carbon/react";
 
 const helper = createColumnHelper<EngineInfo>();
 
@@ -39,13 +48,6 @@ export const App: FC = () => {
       "engines",
       Request.Create({
         command: "docker",
-        args: `run -i --memory=512m --cpus=1.0 random-step`.split(" "),
-      })
-    );
-    window.electron.ipcRenderer.send(
-      "engines",
-      Request.Create({
-        command: "docker",
         args: `run -i --memory=512m --cpus=1.0 random-step:v2.2.0`.split(" "),
       })
     );
@@ -54,51 +56,37 @@ export const App: FC = () => {
     <div>
       <main>
         <h4>Engines</h4>
-        <table>
-          <thead>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <th key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
+        <Table>
+          <TableHead>
+            <TableRow>
+              {table
+                .getHeaderGroups()
+                .map((headerGroup) =>
+                  headerGroup.headers.map((header) => (
+                    <TableHeader key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHeader>
+                  ))
+                )}
+            </TableRow>
+          </TableHead>
+          <TableBody>
             {table.getRowModel().rows.map((row) => (
-              <tr key={row.id}>
+              <TableRow key={row.id}>
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id}>
+                  <TableCell key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
+                  </TableCell>
                 ))}
-              </tr>
+              </TableRow>
             ))}
-          </tbody>
-          <tfoot>
-            {table.getFooterGroups().map((footerGroup) => (
-              <tr key={footerGroup.id}>
-                {footerGroup.headers.map((header) => (
-                  <th key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.footer,
-                          header.getContext()
-                        )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </tfoot>
-        </table>
+          </TableBody>
+        </Table>
       </main>
     </div>
   );
