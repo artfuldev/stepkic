@@ -1,9 +1,10 @@
 import React, { FC, useCallback, useState } from "react";
 import { EngineInfo } from "../../shared/model";
-import "./global.scss";
 import {
   Button,
   Table,
+  TableBatchAction,
+  TableBatchActions,
   TableBody,
   TableCell,
   TableContainer,
@@ -16,6 +17,7 @@ import {
   TableToolbarContent,
 } from "@carbon/react";
 import { Set } from "immutable";
+import { TrashCan } from "@carbon/icons-react";
 
 type IdentifiableEngine = EngineInfo & { id: string };
 
@@ -42,10 +44,23 @@ export const EnginesView: FC<Props> = ({ engines, onAdd, onDelete }) => {
       setSelected(Set(engines.map(({ id }) => id)));
     }
   }, [selected, engines, setSelected]);
+  const onBulkDelete = useCallback(() => {
+    selected.forEach((id) => onDelete(id));
+    setSelected(Set());
+  }, [selected, onDelete, setSelected]);
 
   return (
     <TableContainer title="Engines" description="List of available engines">
       <TableToolbar>
+        <TableBatchActions
+          shouldShowBatchActions={!selected.isEmpty()}
+          totalSelected={selected.count()}
+          onCancel={() => setSelected(Set())}
+        >
+          <TableBatchAction renderIcon={TrashCan} onClick={onBulkDelete}>
+            Delete
+          </TableBatchAction>
+        </TableBatchActions>
         <TableToolbarContent>
           <Button onClick={onAdd} kind="primary">
             Add new
@@ -58,7 +73,10 @@ export const EnginesView: FC<Props> = ({ engines, onAdd, onDelete }) => {
             <TableSelectAll
               id="select-all"
               name="select-all"
-              checked={engines.length === selected.count()}
+              ariaLabel="Select all"
+              checked={
+                engines.length !== 0 && engines.length === selected.count()
+              }
               onSelect={selectAll}
             />
             {columns.map((header) => (
@@ -67,6 +85,13 @@ export const EnginesView: FC<Props> = ({ engines, onAdd, onDelete }) => {
           </TableRow>
         </TableHead>
         <TableBody>
+          {engines.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={columns.length + 1} align="center">
+                Add your first engine above.
+              </TableCell>
+            </TableRow>
+          ) : null}
           {engines.map((row) => (
             <TableRow key={row.id}>
               <TableSelectRow
