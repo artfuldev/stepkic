@@ -1,6 +1,7 @@
 import React, { FC, useCallback, useMemo, useState } from "react";
 import { Modal, TextInput } from "@carbon/react";
 import { ProcessInfo } from "../../shared/model";
+import ReactDOM from "react-dom";
 
 type Props = {
   open: boolean;
@@ -25,7 +26,7 @@ export const AddEngine: FC<Props> = ({ open, setOpen, onAdd }) => {
     });
     onClose();
   }, [args, command, cwd, onAdd, onClose]);
-  return (
+  return ReactDOM.createPortal(
     <Modal
       open={open}
       onRequestClose={onClose}
@@ -76,6 +77,7 @@ export const AddEngine: FC<Props> = ({ open, setOpen, onAdd }) => {
           marginBottom: "1rem",
         }}
       />
-    </Modal>
+    </Modal>,
+    document.body
   );
 };
