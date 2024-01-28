@@ -13,11 +13,11 @@ import {
 import { spawn } from "child_process";
 import { createInterface } from "readline";
 import { str } from "./t3en/board";
-import { api } from "./engines/api";
+import { Store } from "./store";
 
 type Inputs = {
   send: (r: Receivable) => void;
-  store: ReturnType<typeof api>;
+  store: Store;
 };
 
 export const coordinator = ({ send }: Inputs) => {

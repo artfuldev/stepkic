@@ -2,21 +2,16 @@
 import { ipcMain } from "electron";
 import { Request } from "../../shared/messaging/engines/request";
 import { Response } from "../../shared/messaging/engines/response";
-import ElectronStore from "electron-store";
 import { EngineInfo, ProcessInfo } from "../../shared/model";
 import { spawn } from "child_process";
 import { createInterface } from "node:readline";
 import { Process } from "./process";
 import { createHash } from "node:crypto";
+import { Store } from "../store";
 
 const hash = (value: string) => createHash("md5").update(value).digest("hex");
 
-type StoreType = {
-  engines: Record<string, EngineInfo>;
-};
-
-export const api = () => {
-  const store = new ElectronStore<StoreType>();
+export const api = (store: Store) => {
   const _delete = (id: string) => {
     const engines = store.get("engines", {});
     delete engines[id];
@@ -122,5 +117,4 @@ export const api = () => {
       },
     })(request);
   });
-  return store;
 };

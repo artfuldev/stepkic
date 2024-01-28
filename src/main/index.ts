@@ -5,6 +5,7 @@ import { Sendable } from "../shared/messaging";
 import { coordinator } from "./coordinator";
 import { api } from "./engines/api";
 import fixPath from "fix-path";
+import { store } from "./store";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -73,12 +74,14 @@ const createEnginesWindow = () => {
 app.on("ready", () => {
   fixPath();
   const window = createWindow();
+  const _store = store();
   createEnginesWindow();
   const receiver = coordinator({
     send: (r) => window.webContents.send("main", r),
+    store: _store,
   });
   ipcMain.on("main", (_, arg: Sendable) => receiver(arg));
-  api();
+  api(_store);
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common
