@@ -1,4 +1,6 @@
-import { Board, Cell, Game, Position, Side } from "../model";
+import { Board, Cell, Game, Position, Side, other } from "../model";
+import { Result } from "../model/result";
+import { Timestamp } from "../model/timestamp";
 import { Rule } from "./rule";
 
 type Index = [number, number];
@@ -52,15 +54,19 @@ const win = (positions: Position[], board: Board): Side | undefined => {
 export const wins = (_board: Board, length?: number): Rule => {
   const winners = winning_positions(_board, length);
   return (game) =>
-    Game.match({
-      started: (board) => {
+    Game.transform({
+      move_made: () => {
+        const board = Game.board(game);
         for (const winner of winners) {
           const side = win(winner, board);
-          if (side != null) return Game.Won(board, side, winner);
+          if (side != null)
+            return Game.Ended(
+              Timestamp.now(),
+              game,
+              Result.Win(other(side), winner)
+            );
         }
         return game;
       },
-      won: () => game,
-      drawn: () => game,
     })(game);
 };

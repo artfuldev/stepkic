@@ -85,6 +85,10 @@ type MatchArg<V extends Tagged<string, unknown[]>[], R> = {
   [K in V[number]["tag"]]: Handler<Extract<V[number], { tag: K }>, R>;
 };
 
+type PartialMatchArg<V extends Tagged<string, unknown[]>[], R> = {
+  [K in V[number]["tag"]]?: Handler<Extract<V[number], { tag: K }>, R>;
+};
+
 export type Match<V extends Tagged<string, unknown[]>[]> = <R>(
   arg: MatchArg<V, R>
 ) => (union: Union<V>) => R;
@@ -94,3 +98,13 @@ export const match =
   (matcher) =>
   (union) =>
     (matcher as any)[union.tag](...union.args);
+
+export type Transform<V extends Tagged<string, unknown[]>[]> = (
+  arg: PartialMatchArg<V, Union<V>>
+) => (union: Union<V>) => Union<V>;
+
+export const transform =
+  <V extends Tagged<string, unknown[]>[]>(): Transform<V> =>
+  (matcher) =>
+  (union) =>
+    ((matcher as any)[union.tag] ?? (() => union))(...union.args);

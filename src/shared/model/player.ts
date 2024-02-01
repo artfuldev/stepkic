@@ -1,8 +1,7 @@
-import { Tagged, Union, match } from "../tagged";
+import { Union, match } from "../tagged";
 import { Engine } from "./engine";
+import { User } from "./user";
 
-type Name = string;
-type User = Tagged<"user", [Name]>;
 type PlayerVariants = [User, Engine];
 export type Player = Union<PlayerVariants>;
 

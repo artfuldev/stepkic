@@ -2,7 +2,11 @@
 import { ipcMain } from "electron";
 import { Request } from "../../shared/messaging/engines/request";
 import { Response } from "../../shared/messaging/engines/response";
-import { EngineInfo, ProcessInfo } from "../../shared/model";
+import {
+  EngineInfo,
+  EngineIdentification,
+  ProcessInfo,
+} from "../../shared/model";
 import { spawn } from "child_process";
 import { createInterface } from "node:readline";
 import { Process } from "./process";
@@ -57,7 +61,7 @@ export const api = (store: Store) => {
               next(process);
               return;
             }
-            const engine = record as unknown as EngineInfo;
+            const engine = { cwd, command, args, ...record } as EngineInfo;
             process = Process.Identified(engine);
             stdin.write("quit\n");
             const id = hash(JSON.stringify(engine));

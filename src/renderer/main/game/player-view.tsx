@@ -8,7 +8,7 @@ type Props = {
 };
 
 const name = Player.match({
-  user: (name) => <span>{name}</span>,
+  user: ({ name }) => <span>{name}</span>,
   engine: (_, { name, version }) => <span>{name} <em>v{version}</em></span>,
 });
 

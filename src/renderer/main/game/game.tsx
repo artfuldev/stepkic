@@ -6,6 +6,7 @@ import {
   Players,
   Position,
   Side,
+  User,
 } from "../../../shared/model";
 import {
   MoveAttempted,
@@ -13,37 +14,24 @@ import {
   Receivable,
 } from "../../../shared/messaging";
 import { GameView } from "./game-view";
+import { statusText } from "./status-text";
+import { highlightedSquares } from "./highlighted-squares";
+import { movesMade } from "./moves-made";
 
 type Props = {
   size: number;
 };
 
-const statusText = Game.match({
-  started: (_, side) => `${side} to play :o`,
-  won: (_, side) => `${side} won! :)`,
-  drawn: () => `drawn :|`,
+const engine: Engine = Engine.create("9c65f05b355019720239061fc76b89bb", {
+  name: "random-step",
+  author: "artfuldev<hello@artful.dev>",
+  version: "2.3.2",
+  url: "https://github.com/artfuldev/random-step",
 });
-
-const winners = Game.match({
-  started: () => [],
-  drawn: () => [],
-  won: (_, __, positions) => positions,
-});
-
-const engine: Engine = {
-  tag: "engine",
-  args: [
-    {
-      command: "docker",
-      args: `run -i --memory=512m --cpus=1.0 random-step`.split(" "),
-    },
-    { name: "random-step", author: "artfuldev", version: "2.1.0", url: "" },
-  ],
-};
 
 const _players: Players = {
-  [Side.X]: { args: ["Player X"], tag: "user" },
-  [Side.O]: { args: ["Player O"], tag: "user" },
+  [Side.X]: User.create("Player X"),
+  [Side.O]: User.create("Player O"),
 };
 
 const _Game: FC<Props> = ({ size }) => {
@@ -70,27 +58,14 @@ const _Game: FC<Props> = ({ size }) => {
           const game = message.args[0];
           setBoard(Game.board(game));
           setStatus(statusText(game));
-          setHighlights(winners(game));
+          setHighlights(highlightedSquares(game));
           setPlayable(false);
-          break;
-        }
-        case "player-updated": {
-          setPlayers((players) => ({
-            ...players,
-            [message.args[0]]: message.args[1],
-          }));
+          setPlayers(Game.players(game));
+          setMoves(movesMade(game));
           break;
         }
         case "move-requested": {
           setPlayable(true);
-          break;
-        }
-        case "move-made": {
-          setMoves((moves) => moves.concat(message.args[0]));
-          break;
-        }
-        case "moves-cleared": {
-          setMoves([]);
           break;
         }
       }
