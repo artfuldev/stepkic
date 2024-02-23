@@ -22,13 +22,6 @@ type Props = {
   size: number;
 };
 
-const engine: Engine = Engine.create("9c65f05b355019720239061fc76b89bb", {
-  name: "random-step",
-  author: "artfuldev<hello@artful.dev>",
-  version: "2.3.2",
-  url: "https://github.com/artfuldev/random-step",
-});
-
 const _players: Players = {
   [Side.X]: User.create("Player X"),
   [Side.O]: User.create("Player O"),
@@ -45,11 +38,7 @@ const _Game: FC<Props> = ({ size }) => {
   useEffect(() => {
     window.electron.ipcRenderer.send(
       "main",
-      NewGameRequested(size, {
-        ..._players,
-        [Side.X]: engine,
-        [Side.O]: engine,
-      })
+      NewGameRequested(size, players)
     );
 
     return window.electron.ipcRenderer.on("main", (_, message: Receivable) => {
