@@ -40,7 +40,6 @@ export const coordinator = ({ send, store }: Inputs) => {
 
   const update = (next: Game) => {
     game = next;
-    console.log(game);
     send(GameUpdated(game));
     Game.match({
       created: (timestamp, _, players) => {
@@ -59,18 +58,13 @@ export const coordinator = ({ send, store }: Inputs) => {
                 );
                 const { cwd, command, args } = store.get("engines")[id];
                 count += 1;
-                const { stdout, stdin, stderr } = spawn(command, args, {
+                const { stdout, stdin } = spawn(command, args, {
                   cwd,
                   stdio: ["pipe", "pipe", "pipe"],
-                });
-                const rl_error = createInterface({ input: stderr });
-                rl_error.on("line", (line) => {
-                  console.log("received error", side, line);
                 });
                 const rl = createInterface({ input: stdout });
                 engines[side] = { stdout, stdin, rl } as any;
                 rl.once("line", (line) => {
-                  console.log("received line", side, line, count);
                   if (line.trim() === "st3p version 1 ok") {
                     count -= 1;
                     if (count === 0) {
@@ -93,7 +87,6 @@ export const coordinator = ({ send, store }: Inputs) => {
             if (engine == null || engine.stdin == null || engine.rl == null)
               return;
             engine.rl.once("line", (line) => {
-              console.log("received line", side, line, game);
               if (line.trim().startsWith("best ")) {
                 const position = Position.parse(line.slice(5));
                 if (position != null) {
@@ -109,20 +102,16 @@ export const coordinator = ({ send, store }: Inputs) => {
                 }
               }
             });
-            console.log("sending", side, str(board));
             engine.stdin.write(`move ${str(board)} ${side}\n`);
-            console.log("sent", side, str(board));
           },
         })(players[side]);
       },
       move_attempted: () => update(rules(game)),
       move_made: () => update(Game.MoveRequested(Timestamp.now(), game)),
-      ended: (_, __, result) => {
-        console.log("ended", result);
+      ended: () =>
         Object.values(engines)
           .map((e) => e?.stdin as unknown as ReturnType<typeof spawn>["stdin"])
-          .forEach((stdin) => stdin?.write("quit\n"));
-      },
+          .forEach((stdin) => stdin?.write("quit\n")),
     })(game);
   };
   const handle = (arg: Sendable) => {
