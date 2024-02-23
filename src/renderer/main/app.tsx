@@ -1,47 +1,8 @@
-/**
- * This file will automatically be loaded by vite and run in the "renderer" context.
- * To learn more about the differences between the "main" and the "renderer" context in
- * Electron, visit:
- *
- * https://electronjs.org/docs/tutorial/application-architecture#main-and-renderer-processes
- *
- * By default, Node.js integration in this file is disabled. When enabling Node.js integration
- * in a renderer process, please be aware of potential security implications. You can read
- * more about security risks here:
- *
- * https://electronjs.org/docs/tutorial/security
- *
- * To enable Node.js integration in this file, open up `main.ts` and enable the `nodeIntegration`
- * flag:
- *
- * ```
- *  // Create the browser window.
- *  mainWindow = new BrowserWindow({
- *    width: 800,
- *    height: 600,
- *    webPreferences: {
- *      nodeIntegration: true
- *    }
- *  });
- * ```
- */
-
-import React, { FC, useEffect } from "react";
-import "./index.css";
+import React, { FC } from "react";
 import { Game } from "./game";
-import { useAppDispatch, useAppSelector } from "./hooks";
-import { increment } from "./reducers/counter";
-
+import "./index.css";
 
 
 export const App: FC = () => {
-  const dispatch = useAppDispatch();
-  const counter = useAppSelector((state) => state.counter.value);
-  useEffect(() => {
-    console.log(counter);
-  }, [counter])
-  useEffect(() => {
-    dispatch(increment());
-  }, []);
-  return <Game size={3} />
+  return <Game size={3} />;
 };
