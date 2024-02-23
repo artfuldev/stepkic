@@ -62,7 +62,7 @@ export const AddEngine: FC<Props> = ({ open, setOpen, onAdd }) => {
         value={args}
         onChange={(ev) => setArgs(ev.target.value)}
         labelText="Arguments"
-        placeholder="e.g. run -i --memory=512m --cpus=1.0 random-step:v2.2.0"
+        placeholder="e.g. run -i --memory=512m --cpus=1.0 --network=none random-step:v2.2.0"
         style={{
           marginBottom: "1rem",
         }}
