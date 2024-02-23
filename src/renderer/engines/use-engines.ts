@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
-import { EngineInfo, ProcessInfo } from "../../shared/model";
+import { Engine, EngineInfo, ProcessInfo, Side } from "../../shared/model";
 import { Response } from "../../shared/messaging/engines/response";
 import { Request } from "../../shared/messaging/engines/request";
+import { NewGameRequested } from "../../shared/messaging";
 
 type IdentifiableEngine = EngineInfo & { id: string };
 
 type Result = {
   engines: IdentifiableEngine[];
   onAdd: (info: ProcessInfo) => void;
+  onPlay: (x: IdentifiableEngine, o: IdentifiableEngine) => void;
   onDelete: (id: string) => void;
 };
 
@@ -33,9 +35,20 @@ export const useEngines = (): Result => {
   const onAdd = (info: ProcessInfo) =>
     window.electron.ipcRenderer.send("engines", Request.Create(info));
 
+  const onPlay = (x: IdentifiableEngine, o: IdentifiableEngine) => {
+    window.electron.ipcRenderer.send(
+      "main",
+      NewGameRequested(3, {
+        [Side.X]: Engine.create(x.id, x),
+        [Side.O]: Engine.create(o.id, o),
+      })
+    );
+  };
+
   return {
     engines,
     onAdd,
+    onPlay,
     onDelete,
   };
 };

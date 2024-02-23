@@ -17,17 +17,24 @@ import {
   TableToolbarContent,
 } from "@carbon/react";
 import { Set } from "immutable";
-import { TrashCan } from "@carbon/icons-react";
+import { Play, TrashCan } from "@carbon/icons-react";
+import { Identifiable } from "./identifiable.type";
 
-type IdentifiableEngine = EngineInfo & { id: string };
+type IdentifiableEngine = Identifiable<EngineInfo>;
 
 type Props = {
   engines: IdentifiableEngine[];
   onAdd: () => void;
+  onCreate: () => void;
   onDelete: (id: string) => void;
 };
 
-export const EnginesView: FC<Props> = ({ engines, onAdd, onDelete }) => {
+export const EnginesView: FC<Props> = ({
+  engines,
+  onAdd,
+  onCreate,
+  onDelete,
+}) => {
   const columns: (keyof IdentifiableEngine)[] = ["name", "version", "author"];
   const [selected, setSelected] = useState<Set<string>>(Set());
   const select = useCallback(
@@ -62,6 +69,13 @@ export const EnginesView: FC<Props> = ({ engines, onAdd, onDelete }) => {
           </TableBatchAction>
         </TableBatchActions>
         <TableToolbarContent>
+          <Button
+            disabled={engines.length === 0}
+            renderIcon={Play}
+            onClick={onCreate}
+            iconDescription="Create Game"
+            kind="ghost"
+          />
           <Button onClick={onAdd} kind="primary">
             Add new
           </Button>
