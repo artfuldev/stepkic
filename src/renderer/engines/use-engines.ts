@@ -15,18 +15,18 @@ export const useEngines = (): Result => {
   const [entries, setEntries] = useState<[string, EngineInfo][]>([]);
   const engines = entries.map(([id, info]) => ({ ...info, id }));
 
-  useEffect(() => {
-    return window.electron.ipcRenderer.on(
-      "engines",
-      (_, response: Response) => {
+  useEffect(
+    () =>
+      window.electron.ipcRenderer.on("engines", (_, response: Response) => {
         setEntries(Object.entries(response.args[0]));
-      }
-    );
-  }, []);
+      }),
+    []
+  );
 
-  useEffect(() => {
-    window.electron.ipcRenderer.send("engines", Request.List());
-  }, []);
+  useEffect(
+    () => window.electron.ipcRenderer.send("engines", Request.List()),
+    []
+  );
 
   const onDelete = (id: string) =>
     window.electron.ipcRenderer.send("engines", Request.Delete(id));
@@ -36,6 +36,6 @@ export const useEngines = (): Result => {
   return {
     engines,
     onAdd,
-    onDelete
+    onDelete,
   };
 };
