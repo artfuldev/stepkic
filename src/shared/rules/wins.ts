@@ -60,11 +60,7 @@ export const wins = (_board: Board, length?: number): Rule => {
         for (const winner of winners) {
           const side = win(winner, board);
           if (side != null)
-            return Game.Ended(
-              Timestamp.now(),
-              game,
-              Result.Win(other(side), winner)
-            );
+            return Game.Ended(Timestamp.now(), game, Result.Win(side, winner));
         }
         return game;
       },
