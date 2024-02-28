@@ -91,6 +91,14 @@ export const coordinator = ({ send, store }: Inputs) => {
       started: () => update(Game.MoveRequested(Timestamp.now(), game)),
       move_requested: (_, previous) => {
         const [board, side] = Game.state(previous);
+        const start = Date.now();
+        const time = 3000;
+        const end = start + time;
+        let played = false;
+        setTimeout(() => {
+          if (played) return;
+          update(Game.Ended(Timestamp.now(), game, Result.Timeout(side)));
+        }, time);
         Player.match({
           user: () => {},
           engine: () => {
@@ -98,6 +106,8 @@ export const coordinator = ({ send, store }: Inputs) => {
             if (engine == null || engine.stdin == null || engine.rl == null)
               return;
             until((line) => line.trim().startsWith("best "))((line) => {
+              if (Date.now() > end) return;
+              played = true;
               const position = Position.parse(line.slice(5));
               if (position != null) {
                 update(Game.attempt(position)(game));
@@ -111,7 +121,7 @@ export const coordinator = ({ send, store }: Inputs) => {
                 );
               }
             })(engine.rl);
-            engine.stdin.write(`move ${str(board)} ${side}\n`);
+            engine.stdin.write(`move ${str(board)} ${side} time ms:${time}\n`);
           },
         })(players[side]);
       },
