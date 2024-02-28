@@ -71,8 +71,8 @@ export const CreateGame: FC<Props> = ({ engines, open, setOpen, onPlay }) => {
         }}
       >
         <SelectItem value="" text="Select an engine" />
-        {engines.map((engine) => (
-          <SelectItem key={engine.id} value={engine.id} text={engine.name} />
+        {engines.map(({ id, name, version }) => (
+          <SelectItem key={id} value={id} text={`${name} v${version}`} />
         ))}
       </Select>
       <Select
@@ -87,8 +87,8 @@ export const CreateGame: FC<Props> = ({ engines, open, setOpen, onPlay }) => {
         }}
       >
         <SelectItem value="" text="Select an engine" />
-        {engines.map((engine) => (
-          <SelectItem key={engine.id} value={engine.id} text={engine.name} />
+        {engines.map(({ id, name, version }) => (
+          <SelectItem key={id} value={id} text={`${name} v${version}`} />
         ))}
       </Select>
     </Modal>,
