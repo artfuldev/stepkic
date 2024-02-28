@@ -36,7 +36,6 @@ export const api = (store: Store) => {
       Process.match({
         opened: () => {
           if (line.trim() !== "st3p version 1 ok") {
-            rl.off("line", matcher);
             next(process);
             return;
           }
@@ -45,7 +44,6 @@ export const api = (store: Store) => {
         },
         handshook: (record) => {
           if (!line.startsWith("identify ")) {
-            rl.off("line", matcher);
             next(process);
             return;
           }

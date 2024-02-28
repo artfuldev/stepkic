@@ -38,6 +38,19 @@ export const coordinator = ({ send, store }: Inputs) => {
     [Side.O]: null,
   };
 
+  const until =
+    (f: (str: string) => boolean) =>
+    (callback: (str: string) => void) =>
+    (rl: ReadLine) => {
+      const listener = (line: string) => {
+        if (f(line)) {
+          rl.off("line", listener);
+          callback(line);
+        }
+      };
+      rl.on("line", listener);
+    };
+
   const update = (next: Game) => {
     game = next;
     send(GameUpdated(game));
@@ -64,14 +77,12 @@ export const coordinator = ({ send, store }: Inputs) => {
                 });
                 const rl = createInterface({ input: stdout });
                 engines[side] = { stdout, stdin, rl } as any;
-                rl.once("line", (line) => {
-                  if (line.trim() === "st3p version 1 ok") {
-                    count -= 1;
-                    if (count === 0) {
-                      update(Game.Started(timestamp, game));
-                    }
+                until((line) => line.trim() === "st3p version 1 ok")(() => {
+                  count -= 1;
+                  if (count === 0) {
+                    update(Game.Started(timestamp, game));
                   }
-                });
+                })(rl);
                 stdin.write("st3p version 1\n");
               },
             })(player);
@@ -86,22 +97,20 @@ export const coordinator = ({ send, store }: Inputs) => {
             const engine = engines[side];
             if (engine == null || engine.stdin == null || engine.rl == null)
               return;
-            engine.rl.once("line", (line) => {
-              if (line.trim().startsWith("best ")) {
-                const position = Position.parse(line.slice(5));
-                if (position != null) {
-                  update(Game.attempt(position)(game));
-                } else {
-                  update(
-                    Game.Ended(
-                      Timestamp.now(),
-                      game,
-                      Result.UnknownMove(side, line.slice(5))
-                    )
-                  );
-                }
+            until((line) => line.trim().startsWith("best "))((line) => {
+              const position = Position.parse(line.slice(5));
+              if (position != null) {
+                update(Game.attempt(position)(game));
+              } else {
+                update(
+                  Game.Ended(
+                    Timestamp.now(),
+                    game,
+                    Result.UnknownMove(side, line.slice(5))
+                  )
+                );
               }
-            });
+            })(engine.rl);
             engine.stdin.write(`move ${str(board)} ${side}\n`);
           },
         })(players[side]);
