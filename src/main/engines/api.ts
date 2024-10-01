@@ -35,7 +35,7 @@ export const api = (store: Store) => {
       console.log(process, line);
       Process.match({
         opened: () => {
-          if (line.trim() !== "st3p version 1 ok") {
+          if (line.trim() !== "st3p version 2 ok") {
             next(process);
             return;
           }
@@ -79,7 +79,7 @@ export const api = (store: Store) => {
       })(process);
     };
     rl.on("line", matcher);
-    stdin.write("st3p version 1\n");
+    stdin.write("st3p version 2\n");
   };
   ipcMain.on("engines", ({ reply }, request: Request) => {
     Request.match({
