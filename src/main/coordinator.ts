@@ -58,6 +58,7 @@ export const coordinator = ({ send, store }: Inputs) => {
     Game.match({
       created: (timestamp, _, players) => {
         let count = 0;
+        let started = false;
         [Side.X, Side.O]
           .map((side) => [side, players[side]] as const)
           .forEach(([side, player]) => {
@@ -80,8 +81,9 @@ export const coordinator = ({ send, store }: Inputs) => {
                 engines[side] = { stdout, stdin, rl } as any;
                 until((line) => line.trim() === "st3p version 2 ok")(() => {
                   count -= 1;
-                  if (count === 0) {
-                    update(Game.Started(timestamp, game));
+                  if (count === 0 && !started) {
+                    started = true;
+                    queueMicrotask(() => update(Game.Started(timestamp, game)));
                   }
                 })(rl);
                 rl.on('line', (line) => console.log(side, '<', line));
