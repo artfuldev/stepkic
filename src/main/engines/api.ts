@@ -2,18 +2,12 @@
 import { ipcMain } from "electron";
 import { Request } from "../../shared/messaging/engines/request";
 import { Response } from "../../shared/messaging/engines/response";
-import {
-  EngineInfo,
-  EngineIdentification,
-  ProcessInfo,
-} from "../../shared/model";
+import { EngineInfo, ProcessInfo } from "../../shared/model";
 import { spawn } from "child_process";
 import { createInterface } from "node:readline";
 import { Process } from "./process";
-import { createHash } from "node:crypto";
+import { sha1 } from "object-hash";
 import { Store } from "../store";
-
-const hash = (value: string) => createHash("md5").update(value).digest("hex");
 
 export const api = (store: Store) => {
   const _delete = (id: string) => {
@@ -62,7 +56,7 @@ export const api = (store: Store) => {
             const engine = { cwd, command, args, ...record } as EngineInfo;
             process = Process.Identified(engine);
             stdin.write("quit\n");
-            const id = hash(JSON.stringify(engine));
+            const id = sha1(engine);
             const engines = store.get("engines", {});
             if (engines[id] != null) return;
             engines[id] = engine;
