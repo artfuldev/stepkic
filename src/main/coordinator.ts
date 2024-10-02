@@ -136,10 +136,29 @@ export const coordinator = ({ send, store }: Inputs) => {
       },
       move_attempted: () => update(rules(game)),
       move_made: () => update(Game.MoveRequested(Timestamp.now(), game)),
-      ended: () =>
-        Object.values(engines)
-          .map((e) => e?.stdin as unknown as ReturnType<typeof spawn>["stdin"])
-          .forEach((stdin) => stdin?.write("quit\n")),
+      ended: () => {
+        [Side.X, Side.O]
+          .map((side) => [side, players[side]] as const)
+          .forEach(([side, player]) => {
+            Player.match({
+              user: () => {},
+              engine: (id) => {
+                console.log(
+                  "killing instance of engine",
+                  id,
+                  "for side",
+                  side
+                );
+                const engine = engines[side];
+                if (engine == null || engine.stdin == null || engine.rl == null)
+                  return;
+                const cmd = 'quit';
+                console.log(side, '>', cmd);
+                engine.stdin.write(`${cmd}\n`);
+              },
+            })(player);
+          });
+      }
     })(game);
   };
   const handle = ({ tag, args }: Sendable) => {
