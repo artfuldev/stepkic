@@ -8,10 +8,9 @@ type Index = [number, number];
 const winning_positions = (board: Board, length?: number): Position[][] => {
   if (length == null || length > board.length) length = board.length;
   const positions: Index[][] = [];
-  const diagonal: Index[] = [];
-  const anti_diagonal: Index[] = [];
   const size = board.length;
 
+  // Collect horizontal and vertical winning positions
   for (let i = 0; i < size; i++) {
     for (let j = 0; j <= size - length; j++) {
       const row: Index[] = [];
@@ -23,13 +22,28 @@ const winning_positions = (board: Board, length?: number): Position[][] => {
       positions.push(row);
       positions.push(column);
     }
-    diagonal.push([i, i]);
-    anti_diagonal.push([i, size - i - 1]);
   }
 
+  // Collect diagonal winning positions
   for (let i = 0; i <= size - length; i++) {
-    positions.push(diagonal.slice(i, i + length));
-    positions.push(anti_diagonal.slice(i, i + length));
+    for (let j = 0; j <= size - length; j++) {
+      const diagonal: Index[] = [];
+      for (let k = 0; k < length; k++) {
+        diagonal.push([i + k, j + k]);
+      }
+      positions.push(diagonal);
+    }
+  }
+
+  // Collect anti-diagonal winning positions
+  for (let i = 0; i <= size - length; i++) {
+    for (let j = length - 1; j < size; j++) {
+      const anti_diagonal: Index[] = [];
+      for (let k = 0; k < length; k++) {
+        anti_diagonal.push([i + k, j - k]);
+      }
+      positions.push(anti_diagonal);
+    }
   }
 
   return positions.map((indices) =>
