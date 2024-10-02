@@ -14,7 +14,8 @@ import { Players } from "./players";
 import { Timestamp } from "./timestamp";
 import { Result } from "./result";
 
-type Created = Tagged<"created", [Timestamp, Board, Players]>;
+type WinLength = number;
+type Created = Tagged<"created", [Timestamp, Board, Players, WinLength]>;
 type Started = Tagged<"started", [Timestamp, Game]>;
 type MoveRequested = Tagged<"move_requested", [Timestamp, Game]>;
 type MoveAttempted = Tagged<"move_attempted", [Timestamp, Position, Game]>;
@@ -114,6 +115,16 @@ const players = (game: Game): Players =>
     ended: (_, game) => players(game),
   })(game);
 
+const winLength = (game: Game): number =>
+  _match<number>({
+    created: (_, __, ___, _winLength) => _winLength,
+    started: (_, game) => winLength(game),
+    move_requested: (_, game) => winLength(game),
+    move_attempted: (_, __, game) => winLength(game),
+    move_made: (_, __, game) => winLength(game),
+    ended: (_, game) => winLength(game),
+  })(game);
+
 export const Game = {
   Created: constructor<GameVariants, Created>("created"),
   Started: constructor<GameVariants, Started>("started"),
@@ -127,6 +138,7 @@ export const Game = {
   board: (game: Game): Board => _state(game)(([board]) => board),
   side: (game: Game): Side => _state(game)(([_, side]) => side),
   players,
+  winLength,
   attempt: (position: Position) =>
     _transform({
       move_requested: (...args) =>

@@ -24,12 +24,13 @@ type Inputs = {
 
 export const coordinator = ({ send, store }: Inputs) => {
   let board = Board.create(3);
-  let rules = and(play, wins(board, 5), draw);
+  let winLength = 3;
+  let rules = and(play, wins(board, winLength), draw);
   let players: Players = {
     [Side.X]: User.create("X"),
     [Side.O]: User.create("O"),
   };
-  let game = Game.Created(Timestamp.now(), board, players);
+  let game = Game.Created(Timestamp.now(), board, players, winLength);
   const engines: Record<
     Side,
     Required<(ReturnType<typeof spawn> & { rl: ReadLine }) | null>
@@ -77,13 +78,13 @@ export const coordinator = ({ send, store }: Inputs) => {
                 });
                 const rl = createInterface({ input: stdout });
                 engines[side] = { stdout, stdin, rl } as any;
-                until((line) => line.trim() === "st3p version 1 ok")(() => {
+                until((line) => line.trim() === "st3p version 2 ok")(() => {
                   count -= 1;
                   if (count === 0) {
                     update(Game.Started(timestamp, game));
                   }
                 })(rl);
-                stdin.write("st3p version 1\n");
+                stdin.write("st3p version 2\n");
               },
             })(player);
           });
@@ -108,7 +109,8 @@ export const coordinator = ({ send, store }: Inputs) => {
             until((line) => line.trim().startsWith("best "))((line) => {
               if (Date.now() > end) return;
               played = true;
-              const position = Position.parse(line.slice(5));
+              const moveString = line.slice(5);
+              const position = Position.parse(moveString);
               if (position != null) {
                 update(Game.attempt(position)(game));
               } else {
@@ -116,12 +118,12 @@ export const coordinator = ({ send, store }: Inputs) => {
                   Game.Ended(
                     Timestamp.now(),
                     game,
-                    Result.UnknownMove(side, line.slice(5))
+                    Result.UnknownMove(side, moveString)
                   )
                 );
               }
             })(engine.rl);
-            engine.stdin.write(`move ${str(board)} ${side} time ms:${time}\n`);
+            engine.stdin.write(`move ${str(board)} ${side} time ms:${time} win-length ${winLength}\n`);
           },
         })(players[side]);
       },
@@ -136,11 +138,12 @@ export const coordinator = ({ send, store }: Inputs) => {
   const handle = (arg: Sendable) => {
     switch (arg.tag) {
       case "new-game-requested": {
-        const [size, _players] = arg.args;
+        const [size, _players, _winLength] = arg.args;
         board = Board.create(size);
-        rules = and(play, wins(board, 5), draw);
+        rules = and(play, wins(board, winLength), draw);
         players = _players;
-        update(Game.Created(Timestamp.now(), board, _players));
+        winLength = _winLength;
+        update(Game.Created(Timestamp.now(), board, _players, _winLength));
         break;
       }
       case "move-attempted": {

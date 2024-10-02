@@ -1,7 +1,6 @@
 import React, { FC, useCallback, useEffect, useState } from "react";
 import {
   Board,
-  Engine,
   Game,
   Players,
   Position,
@@ -20,6 +19,7 @@ import { movesMade } from "./moves-made";
 
 type Props = {
   size: number;
+  winLength?: number;
 };
 
 const _players: Players = {
@@ -27,7 +27,7 @@ const _players: Players = {
   [Side.O]: User.create("Player O"),
 };
 
-const _Game: FC<Props> = ({ size }) => {
+const _Game: FC<Props> = ({ size, winLength = size }) => {
   const [board, setBoard] = useState(Board.create(size));
   const [highlights, setHighlights] = useState<Position[]>([]);
   const [status, setStatus] = useState(`Not initialized`);
@@ -38,7 +38,7 @@ const _Game: FC<Props> = ({ size }) => {
   useEffect(() => {
     window.electron.ipcRenderer.send(
       "main",
-      NewGameRequested(size, players)
+      NewGameRequested(size, players, winLength)
     );
 
     return window.electron.ipcRenderer.on("main", (_, message: Receivable) => {

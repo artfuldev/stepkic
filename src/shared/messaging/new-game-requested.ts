@@ -2,7 +2,8 @@ import { Players } from "../model";
 import { Constructor, Tagged } from "../tagged";
 
 type Size = number;
-export type NewGameRequested = Tagged<"new-game-requested", [Size, Players]>;
+type WinLength = number;
+export type NewGameRequested = Tagged<"new-game-requested", [Size, Players, WinLength]>;
 
 export const NewGameRequested: Constructor<
   NewGameRequested,
