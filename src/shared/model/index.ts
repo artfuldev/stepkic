@@ -13,3 +13,4 @@ export * from "./timestamp";
 export * from "./user";
 export * from "./result";
 export * from "./engine-identification";
+export * from "./msvn";
