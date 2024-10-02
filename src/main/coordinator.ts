@@ -84,7 +84,10 @@ export const coordinator = ({ send, store }: Inputs) => {
                     update(Game.Started(timestamp, game));
                   }
                 })(rl);
-                stdin.write("st3p version 2\n");
+                rl.on('line', (line) => console.log(side, '<', line));
+                const cmd = 'st3p version 2';
+                console.log(side, '>', cmd);
+                stdin.write(`${cmd}\n`);
               },
             })(player);
           });
@@ -123,7 +126,9 @@ export const coordinator = ({ send, store }: Inputs) => {
                 );
               }
             })(engine.rl);
-            engine.stdin.write(`move ${str(board)} ${side} time ms:${time} win-length ${winLength}\n`);
+            const command = `move ${str(board)} ${side} time ms:${time} win-length ${winLength}`;
+            console.log(side, '>', command);
+            engine.stdin.write(`${command}\n`);
           },
         })(players[side]);
       },
