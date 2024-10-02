@@ -4,5 +4,5 @@ import "./index.css";
 
 
 export const App: FC = () => {
-  return <Game size={3} winLength={2} />;
+  return <Game />;
 };

@@ -135,19 +135,20 @@ export const coordinator = ({ send, store }: Inputs) => {
           .forEach((stdin) => stdin?.write("quit\n")),
     })(game);
   };
-  const handle = (arg: Sendable) => {
-    switch (arg.tag) {
+  const handle = ({ tag, args }: Sendable) => {
+    switch (tag) {
       case "new-game-requested": {
-        const [size, _players, _winLength] = arg.args;
-        board = Board.create(size);
-        rules = and(play, wins(board, winLength), draw);
+        const [size, _players, _winLength] = args;
+        console.log('args', args);
         players = _players;
         winLength = _winLength;
-        update(Game.Created(Timestamp.now(), board, _players, _winLength));
+        board = Board.create(size);
+        rules = and(play, wins(board, winLength), draw);
+        update(Game.Created(Timestamp.now(), board, players, winLength));
         break;
       }
       case "move-attempted": {
-        const position = arg.args[0];
+        const [position] = args;
         update(Game.MoveAttempted(Timestamp.now(), position, game));
         break;
       }

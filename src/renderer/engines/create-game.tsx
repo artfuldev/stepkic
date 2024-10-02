@@ -1,8 +1,17 @@
 import React, { FC, useCallback, useMemo, useState } from "react";
-import { Modal, Select, SelectItem } from "@carbon/react";
+import {
+  Modal,
+  Select,
+  SelectItem,
+  Slider,
+  Grid,
+  Column,
+  Form,
+} from "@carbon/react";
 import { EngineInfo } from "../../shared/model";
 import ReactDOM from "react-dom";
 import { Identifiable } from "./identifiable.type";
+import { NewGameArgs } from "./new-game-args";
 
 type IdentifiableEngine = Identifiable<EngineInfo>;
 
@@ -10,7 +19,7 @@ type Props = {
   engines: IdentifiableEngine[];
   open: boolean;
   setOpen: (open: boolean) => void;
-  onPlay: (x: IdentifiableEngine, o: IdentifiableEngine) => void;
+  onPlay: (args: NewGameArgs) => void;
 };
 
 export const CreateGame: FC<Props> = ({ engines, open, setOpen, onPlay }) => {
@@ -20,12 +29,15 @@ export const CreateGame: FC<Props> = ({ engines, open, setOpen, onPlay }) => {
   );
   const [x, setX] = useState<IdentifiableEngine | undefined>(engines[0]);
   const [o, setO] = useState<IdentifiableEngine | undefined>(undefined);
+  const [size, setSize] = useState(3);
+  const [winLength, setWinLength] = useState(3);
   const valid = useMemo(() => x != null, [x]);
   const onClose = useCallback(() => setOpen(false), [setOpen]);
   const onSubmit = useCallback(() => {
-    onPlay(x!, o ?? x!);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    onPlay({ x: x!, o: o ?? x!, size, winLength });
     onClose();
-  }, [x, o, onPlay, onClose]);
+  }, [x, o, size, winLength, onPlay, onClose]);
   const selectX = useCallback(
     (event: React.ChangeEvent<HTMLSelectElement>) => {
       setX(map.get(event.target.value));
@@ -37,6 +49,13 @@ export const CreateGame: FC<Props> = ({ engines, open, setOpen, onPlay }) => {
       setO(map.get(event.target.value));
     },
     [setO, map]
+  );
+  const onSizeChange = useCallback(
+    ({ value }: { value: number }) => {
+      setSize(value);
+      setWinLength(value);
+    },
+    [setWinLength, setSize]
   );
   return ReactDOM.createPortal(
     <Modal
@@ -57,40 +76,63 @@ export const CreateGame: FC<Props> = ({ engines, open, setOpen, onPlay }) => {
         You can create a game between 2 engines, or a game where a single engine
         plays both sides.
       </p>
-      <Select
-        required
-        data-modal-primary-focus
-        id="x"
-        value={x?.id}
-        onChange={selectX}
-        labelText="Side X"
-        placeholder="Select an engine"
-        helperText="Engine to play side X"
-        style={{
-          marginBottom: "1rem",
-        }}
-      >
-        <SelectItem value="" text="Select an engine" />
-        {engines.map(({ id, name, version }) => (
-          <SelectItem key={id} value={id} text={`${name} v${version}`} />
-        ))}
-      </Select>
-      <Select
-        id="o"
-        value={o?.id}
-        onChange={selectO}
-        labelText="Side O"
-        placeholder="Select an engine"
-        helperText="Engine to play side O, if different from side X"
-        style={{
-          marginBottom: "1rem",
-        }}
-      >
-        <SelectItem value="" text="Select an engine" />
-        {engines.map(({ id, name, version }) => (
-          <SelectItem key={id} value={id} text={`${name} v${version}`} />
-        ))}
-      </Select>
+      <Form>
+        <Grid>
+          <Column lg={8} md={4} sm={2}>
+            <Select
+              required
+              data-modal-primary-focus
+              id="x"
+              value={x?.id}
+              onChange={selectX}
+              labelText="Side X"
+              placeholder="Select an engine"
+              style={{
+                marginBottom: "1rem",
+              }}
+            >
+              <SelectItem value="" text="Select an engine" />
+              {engines.map(({ id, name, version }) => (
+                <SelectItem key={id} value={id} text={`${name} v${version}`} />
+              ))}
+            </Select>
+          </Column>
+          <Column lg={8} md={4} sm={2}>
+            <Select
+              id="o"
+              value={o?.id}
+              onChange={selectO}
+              labelText="Side O (Optional)"
+              placeholder="Select an engine"
+              style={{
+                marginBottom: "1rem",
+              }}
+            >
+              <SelectItem value="" text="Select an engine" />
+              {engines.map(({ id, name, version }) => (
+                <SelectItem key={id} value={id} text={`${name} v${version}`} />
+              ))}
+            </Select>
+          </Column>
+        </Grid>
+        <Slider
+          labelText="Size"
+          value={size}
+          min={3}
+          max={15}
+          step={2}
+          onChange={onSizeChange}
+          invalidText="Invalid size"
+        />
+        <Slider
+          labelText="Win Length"
+          value={winLength}
+          min={2}
+          max={size}
+          onChange={({ value }) => setWinLength(value)}
+          invalidText="Invalid win length"
+        />
+      </Form>
     </Modal>,
     document.body
   );

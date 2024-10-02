@@ -17,17 +17,14 @@ import { statusText } from "./status-text";
 import { highlightedSquares } from "./highlighted-squares";
 import { movesMade } from "./moves-made";
 
-type Props = {
-  size: number;
-  winLength?: number;
-};
-
 const _players: Players = {
   [Side.X]: User.create("Player X"),
   [Side.O]: User.create("Player O"),
 };
 
-const _Game: FC<Props> = ({ size, winLength = size }) => {
+const _Game: FC = () => {
+  const [size, setSize] = useState(3);
+  const [winLength, setWinLength] = useState(3);
   const [board, setBoard] = useState(Board.create(size));
   const [highlights, setHighlights] = useState<Position[]>([]);
   const [status, setStatus] = useState(`Not initialized`);
@@ -45,7 +42,10 @@ const _Game: FC<Props> = ({ size, winLength = size }) => {
       switch (message.tag) {
         case "game-updated": {
           const game = message.args[0];
-          setBoard(Game.board(game));
+          const board = Game.board(game);
+          setBoard(board);
+          setSize(Board.size(board));
+          setWinLength(Game.winLength(game));
           setStatus(statusText(game));
           setHighlights(highlightedSquares(game));
           setPlayable(false);
@@ -59,7 +59,7 @@ const _Game: FC<Props> = ({ size, winLength = size }) => {
         }
       }
     });
-  }, [size]);
+  }, [size, winLength]);
   const play = useCallback(
     (position: Position) => {
       if (!playable) return;

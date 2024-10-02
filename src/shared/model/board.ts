@@ -14,4 +14,5 @@ export const Board = {
       Array.from({ length: size }, () => Cell.Playable())
     ),
   full: (board: Board): boolean => board.every((row) => row.every(unplayable)),
+  size: (board: Board): number => board[0].length
 };

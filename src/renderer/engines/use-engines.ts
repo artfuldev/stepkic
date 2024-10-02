@@ -3,13 +3,13 @@ import { Engine, EngineInfo, ProcessInfo, Side } from "../../shared/model";
 import { Response } from "../../shared/messaging/engines/response";
 import { Request } from "../../shared/messaging/engines/request";
 import { NewGameRequested } from "../../shared/messaging";
+import { IdentifiableEngine, NewGameArgs } from "./new-game-args";
 
-type IdentifiableEngine = EngineInfo & { id: string };
 
 type Result = {
   engines: IdentifiableEngine[];
   onAdd: (info: ProcessInfo) => void;
-  onPlay: (x: IdentifiableEngine, o: IdentifiableEngine) => void;
+  onPlay: (args: NewGameArgs) => void;
   onDelete: (id: string) => void;
 };
 
@@ -35,13 +35,13 @@ export const useEngines = (): Result => {
   const onAdd = (info: ProcessInfo) =>
     window.electron.ipcRenderer.send("engines", Request.Create(info));
 
-  const onPlay = (x: IdentifiableEngine, o: IdentifiableEngine) => {
+  const onPlay = ({ x, o, size, winLength }: NewGameArgs) => {
     window.electron.ipcRenderer.send(
       "main",
-      NewGameRequested(3, {
+      NewGameRequested(size, {
         [Side.X]: Engine.create(x.id, x),
         [Side.O]: Engine.create(o.id, o),
-      })
+      }, winLength)
     );
   };
 
