@@ -18,5 +18,3 @@ contextBridge.exposeInMainWorld("messaging", {
     };
   },
 });
-
-console.log("👋 Hello from preload script!");
