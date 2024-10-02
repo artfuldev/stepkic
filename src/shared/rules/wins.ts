@@ -43,10 +43,8 @@ const win = (positions: Position[], board: Board): Side | undefined => {
     const [row, column] = Position.indices(position);
     const cell = board[row]?.[column] ?? Cell.Playable();
     if (cell.tag === "playable" || cell.tag === "unplayable") return undefined;
-    if (side == null) {
-      side = cell.args[0];
-      continue;
-    } else if (side !== cell.args[0]) return undefined;
+    if (side != null && side !== cell.args[0]) return undefined;
+    side = cell.args[0];
   }
   return side;
 };
