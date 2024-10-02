@@ -20,3 +20,13 @@ should be enough to install the dependencies. To run the app locally, use
 ```sh
 yarn start
 ```
+
+To run in a lower MSVN (current is 2)
+
+```sh
+yarn start -- -- --msvn=1
+```
+
+One set of `--` is for yarn to pass through the remaininng arguments, and we
+need another set of `--` for `electron-forge` to do the same, and the app checks
+for `--msvn=` command switch.
