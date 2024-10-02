@@ -8,7 +8,7 @@ import {
   Column,
   Form,
 } from "@carbon/react";
-import { EngineInfo } from "../../shared/model";
+import { EngineInfo, Msvn } from "../../shared/model";
 import ReactDOM from "react-dom";
 import { Identifiable } from "./identifiable.type";
 import { NewGameArgs } from "./new-game-args";
@@ -16,13 +16,20 @@ import { NewGameArgs } from "./new-game-args";
 type IdentifiableEngine = Identifiable<EngineInfo>;
 
 type Props = {
+  msvn: Msvn;
   engines: IdentifiableEngine[];
   open: boolean;
   setOpen: (open: boolean) => void;
   onPlay: (args: NewGameArgs) => void;
 };
 
-export const CreateGame: FC<Props> = ({ engines, open, setOpen, onPlay }) => {
+export const CreateGame: FC<Props> = ({
+  engines,
+  msvn,
+  open,
+  setOpen,
+  onPlay,
+}) => {
   const map = engines.reduce(
     (map, engine) => map.set(engine.id, engine),
     new Map<string, IdentifiableEngine>()
@@ -124,14 +131,16 @@ export const CreateGame: FC<Props> = ({ engines, open, setOpen, onPlay }) => {
           onChange={onSizeChange}
           invalidText="Invalid size"
         />
-        <Slider
-          labelText="Win Length"
-          value={winLength}
-          min={2}
-          max={size}
-          onChange={({ value }) => setWinLength(value)}
-          invalidText="Invalid win length"
-        />
+        {Msvn.above(2)(() => <></>)(() => (
+          <Slider
+            labelText="Win Length"
+            value={winLength}
+            min={2}
+            max={size}
+            onChange={({ value }) => setWinLength(value)}
+            invalidText="Invalid win length"
+          />
+        ))(msvn)}
       </Form>
     </Modal>,
     document.body
