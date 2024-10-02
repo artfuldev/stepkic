@@ -146,7 +146,6 @@ export const coordinator = ({ send, store }: Inputs) => {
     switch (tag) {
       case "new-game-requested": {
         const [size, _players, _winLength] = args;
-        console.log('args', args);
         players = _players;
         winLength = _winLength;
         board = Board.create(size);
