@@ -2,14 +2,14 @@
 import { ipcMain } from "electron";
 import { Request } from "../../shared/messaging/engines/request";
 import { Response } from "../../shared/messaging/engines/response";
-import { EngineInfo, ProcessInfo } from "../../shared/model";
+import { EngineInfo, Msvn, ProcessInfo } from "../../shared/model";
 import { spawn } from "child_process";
 import { createInterface } from "node:readline";
 import { Process } from "./process";
 import { sha1 } from "object-hash";
 import { Store } from "../store";
 
-export const api = (store: Store) => {
+export const api = (store: Store, msvn: Msvn) => {
   const _delete = (id: string) => {
     const engines = store.get("engines", {});
     delete engines[id];
@@ -29,7 +29,7 @@ export const api = (store: Store) => {
       console.log(process, line);
       Process.match({
         opened: () => {
-          if (line.trim() !== "st3p version 2 ok") {
+          if (line.trim() !== Msvn.expectation(msvn)) {
             next(process);
             return;
           }
@@ -73,7 +73,7 @@ export const api = (store: Store) => {
       })(process);
     };
     rl.on("line", matcher);
-    stdin.write("st3p version 2\n");
+    stdin.write(`${Msvn.handshake(msvn)}\n`);
   };
   ipcMain.on("engines", ({ reply }, request: Request) => {
     Request.match({

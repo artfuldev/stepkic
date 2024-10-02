@@ -6,6 +6,7 @@ import { coordinator } from "./coordinator";
 import { api } from "./engines/api";
 import fixPath from "fix-path";
 import { store } from "./store";
+import { msvn } from "./msvn";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -76,12 +77,14 @@ app.on("ready", () => {
   const window = createWindow();
   const _store = store();
   createEnginesWindow();
+  const _msvn = msvn(app);
   const receiver = coordinator({
     send: (r) => window.webContents.send("main", r),
     store: _store,
+    msvn: _msvn,
   });
   ipcMain.on("main", (_, arg: Sendable) => receiver(arg));
-  api(_store);
+  api(_store, _msvn);
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

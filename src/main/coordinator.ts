@@ -3,6 +3,7 @@ import { and, draw, play, wins } from "../shared/rules";
 import {
   Board,
   Game,
+  Msvn,
   Player,
   Players,
   Position,
@@ -20,10 +21,12 @@ import { Store } from "./store";
 type Inputs = {
   send: (r: Receivable) => void;
   store: Store;
+  msvn: Msvn;
 };
 
-export const coordinator = ({ send, store }: Inputs) => {
+export const coordinator = ({ send, store, msvn }: Inputs) => {
   let board = Board.create(3);
+  let size = 3;
   let winLength = 3;
   let rules = and(play, wins(board, winLength), draw);
   let players: Players = {
@@ -79,16 +82,16 @@ export const coordinator = ({ send, store }: Inputs) => {
                 });
                 const rl = createInterface({ input: stdout });
                 engines[side] = { stdout, stdin, rl } as any;
-                until((line) => line.trim() === "st3p version 2 ok")(() => {
+                until((line) => line.trim() === Msvn.expectation(msvn))(() => {
                   count -= 1;
                   if (count === 0 && !started) {
                     started = true;
                     queueMicrotask(() => update(Game.Started(timestamp, game)));
                   }
                 })(rl);
-                rl.on('line', (line) => console.log(side, '<', line));
-                const cmd = 'st3p version 2';
-                console.log(side, '>', cmd);
+                rl.on("line", (line) => console.log(side, "<", line));
+                const cmd = Msvn.handshake(msvn);
+                console.log(side, ">", cmd);
                 stdin.write(`${cmd}\n`);
               },
             })(player);
@@ -128,8 +131,14 @@ export const coordinator = ({ send, store }: Inputs) => {
                 );
               }
             })(engine.rl);
-            const command = `move ${str(board)} ${side} time ms:${time} win-length ${winLength}`;
-            console.log(side, '>', command);
+            const command = ["move", str(board), side, "time", `ms:${time}`]
+              .concat(
+                Msvn.above(2)<string[]>(() => [])(() =>
+                  winLength !== size ? ["win-length", winLength.toString()] : []
+                )(msvn)
+              )
+              .join(" ");
+            console.log(side, ">", command);
             engine.stdin.write(`${command}\n`);
           },
         })(players[side]);
@@ -143,30 +152,26 @@ export const coordinator = ({ send, store }: Inputs) => {
             Player.match({
               user: () => {},
               engine: (id) => {
-                console.log(
-                  "killing instance of engine",
-                  id,
-                  "for side",
-                  side
-                );
+                console.log("killing instance of engine", id, "for side", side);
                 const engine = engines[side];
                 if (engine == null || engine.stdin == null || engine.rl == null)
                   return;
-                const cmd = 'quit';
-                console.log(side, '>', cmd);
+                const cmd = "quit";
+                console.log(side, ">", cmd);
                 engine.stdin.write(`${cmd}\n`);
               },
             })(player);
           });
-      }
+      },
     })(game);
   };
   const handle = ({ tag, args }: Sendable) => {
     switch (tag) {
       case "new-game-requested": {
-        const [size, _players, _winLength] = args;
+        const [_size, _players, _winLength] = args;
+        size = _size;
         players = _players;
-        winLength = _winLength;
+        winLength = Msvn.above(2)(() => size)(() => _winLength)(msvn);
         board = Board.create(size);
         rules = and(play, wins(board, winLength), draw);
         update(Game.Created(Timestamp.now(), board, players, winLength));
