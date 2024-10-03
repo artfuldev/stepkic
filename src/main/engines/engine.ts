@@ -1,30 +1,26 @@
-import { spawn } from "node:child_process";
+import { ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import { EngineIdentification, Msvn, ProcessInfo } from "../../shared/model";
 import { createInterface, Interface } from "node:readline/promises";
 import debug, { Debugger } from "debug";
-import { Writable } from "node:stream";
 import { nanoid } from "nanoid";
 
 const REQUIRED_KEYS = ["name", "version", "author", "url"];
 
 export class Engine {
   readonly #log: Debugger;
-  readonly #stdin: Writable;
-  readonly #kill: () => void;
+  readonly #process: ChildProcessWithoutNullStreams;
   readonly #rl: Interface;
 
   constructor(
     { cwd, command, args }: ProcessInfo,
     private readonly msvn: Msvn
   ) {
-    const { stdin, stdout, kill } = spawn(command, args, {
+    this.#process = spawn(command, args, {
       cwd,
       stdio: ["pipe", "pipe", "pipe"],
     });
-    this.#stdin = stdin;
     this.#log = debug("engine").extend(nanoid());
-    this.#rl = createInterface({ input: stdout });
-    this.#kill = kill;
+    this.#rl = createInterface({ input: this.#process.stdout });
     this.#log("started process");
   }
 
@@ -37,7 +33,7 @@ export class Engine {
 
   #out(line: string) {
     this.#log("> %s", line);
-    this.#stdin.write(`${line}\n`);
+    this.#process.stdin.write(`${line}\n`);
   }
 
   async #initialize() {
@@ -77,9 +73,14 @@ export class Engine {
     });
   }
 
-  kill() {
-    this.#log("kill requested");
+  quit() {
+    this.#out("quit");
     this.#kill();
+  }
+
+  #kill() {
+    this.#log("kill requested");
+    this.#process.kill();
     this.#log("killed");
   }
 }

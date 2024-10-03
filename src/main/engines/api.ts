@@ -17,7 +17,7 @@ export const api = (store: Store, msvn: Msvn) => {
   const add = async (processInfo: ProcessInfo) => {
     const engine = new Engine(processInfo, msvn);
     const engineIdentification = await engine.identify();
-    engine.kill();
+    engine.quit();
     const engineInfo = { ...processInfo, ...engineIdentification };
     const id = sha1(engineInfo);
     const engines = store.get("engines", {});
