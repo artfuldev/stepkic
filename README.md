@@ -27,6 +27,6 @@ To run in a lower MSVN (current is 2)
 yarn start -- -- --msvn=1
 ```
 
-One set of `--` is for yarn to pass through the remaininng arguments, and we
+One set of `--` is for yarn to pass through the remaining arguments, and we
 need another set of `--` for `electron-forge` to do the same, and the app checks
 for `--msvn=` command switch.
