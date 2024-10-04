@@ -1,38 +1,36 @@
 import { ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import { EngineIdentification, Msvn, ProcessInfo } from "../../shared/model";
 import { createInterface, Interface } from "node:readline/promises";
-import debug, { Debugger } from "debug";
-import { nanoid } from "nanoid";
+import { Debugger } from "debug";
 
 const REQUIRED_KEYS = ["name", "version", "author", "url"];
 
 export class Engine {
-  readonly #log: Debugger;
   readonly #process: ChildProcessWithoutNullStreams;
   readonly #rl: Interface;
 
   constructor(
     { cwd, command, args }: ProcessInfo,
-    private readonly msvn: Msvn
+    private readonly msvn: Msvn,
+    private readonly log: Debugger
   ) {
     this.#process = spawn(command, args, {
       cwd,
       stdio: ["pipe", "pipe", "pipe"],
     });
-    this.#log = debug("engine").extend(nanoid());
     this.#rl = createInterface({ input: this.#process.stdout });
-    this.#log("started process");
+    this.log("started process");
   }
 
   #in(listener: (line: string) => void) {
     return (line: string) => {
-      this.#log("< %s", line);
+      this.log("< %s", line);
       listener(line);
     };
   }
 
   #out(line: string) {
-    this.#log("> %s", line);
+    this.log("> %s", line);
     this.#process.stdin.write(`${line}\n`);
   }
 
@@ -79,8 +77,8 @@ export class Engine {
   }
 
   #kill() {
-    this.#log("kill requested");
+    this.log("kill requested");
     this.#process.kill();
-    this.#log("killed");
+    this.log("killed");
   }
 }

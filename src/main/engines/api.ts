@@ -6,6 +6,7 @@ import { Msvn, ProcessInfo } from "../../shared/model";
 import { sha1 } from "object-hash";
 import { Store } from "../store";
 import { Engine } from "./engine";
+import debug from "debug";
 
 export const api = (store: Store, msvn: Msvn) => {
   const remove = (id: string) => {
@@ -15,7 +16,7 @@ export const api = (store: Store, msvn: Msvn) => {
   };
 
   const add = async (processInfo: ProcessInfo) => {
-    const engine = new Engine(processInfo, msvn);
+    const engine = new Engine(processInfo, msvn, debug('engine').extend('add'));
     const engineIdentification = await engine.identify();
     engine.quit();
     const engineInfo = { ...processInfo, ...engineIdentification };
