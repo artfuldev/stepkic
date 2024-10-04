@@ -12,7 +12,6 @@ import { createInterface, Interface } from "node:readline/promises";
 import { Debugger } from "debug";
 import { Duration } from "luxon";
 import { str } from "../t3en/board";
-import { Vow } from "../../shared/vow";
 
 export class Engine {
   static readonly IDENTIFY_REQUIRED_KEYS = ["name", "version", "author", "url"];
@@ -119,12 +118,5 @@ export class Engine {
 
   quit() {
     this.#out("quit");
-    this.#kill();
-  }
-
-  #kill() {
-    this.log("kill requested");
-    this.#process.kill();
-    this.log("killed");
   }
 }
