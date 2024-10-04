@@ -47,23 +47,21 @@ export class Engine {
 
   async handshake() {
     if (this.handshook) return;
-    return new Promise<void>((resolve, reject) => {
-      this.#rl.once(
-        "line",
-        this.#in((answer) => {
-          if (answer.trim() === Msvn.expectation(this.msvn)) {
-            this.handshook = true;
-            resolve();
-          } else reject(new Error(`invalid handshake: ${answer}`));
-        })
-      );
+    return new Promise<void>((resolve) => {
+      const listener = this.#in((answer) => {
+        if (answer.trim() !== Msvn.expectation(this.msvn)) return;
+        this.handshook = true;
+        this.#rl.off("line", listener);
+        resolve();
+      });
+      this.#rl.on("line", listener);
       this.#out(Msvn.handshake(this.msvn));
     });
   }
 
-  async identify() {
+  async identify(): Promise<EngineIdentification> {
     await this.handshake();
-    return new Promise<EngineIdentification>((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       const map = new Map();
       const listener = this.#in((line: string) => {
         const trimmed = line.trim();
