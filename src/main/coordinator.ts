@@ -1,28 +1,33 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { and, draw, play, wins } from "../shared/rules";
+import { Vow } from "../shared/vow";
 import {
   Board,
   Game,
   Msvn,
   Player,
   Players,
-  Position,
   Result,
   Side,
   Timestamp,
   User,
 } from "../shared/model";
 import { GameUpdated, Receivable, Sendable } from "../shared/messaging";
-import { spawn } from "child_process";
-import { ReadLine, createInterface } from "readline";
-import { str } from "./t3en/board";
 import { Store } from "./store";
+import { Engine } from "./engines/engine";
+import debug from "debug";
+import { Duration } from "luxon";
 
 type Inputs = {
   send: (r: Receivable) => void;
   store: Store;
   msvn: Msvn;
 };
+
+const timeout = (side: Side) =>
+  Vow.timeout(Duration.fromObject({ seconds: 3 }))(Result.Timeout(side));
+
+const log = debug("stepkic").extend("coordinator");
 
 export const coordinator = ({ send, store, msvn }: Inputs) => {
   let board = Board.create(3);
@@ -34,141 +39,78 @@ export const coordinator = ({ send, store, msvn }: Inputs) => {
     [Side.O]: User.create("O"),
   };
   let game = Game.Created(Timestamp.now(), board, players, winLength);
-  const engines: Record<
-    Side,
-    Required<(ReturnType<typeof spawn> & { rl: ReadLine }) | null>
-  > = {
-    [Side.X]: null,
-    [Side.O]: null,
-  };
-
-  const until =
-    (f: (str: string) => boolean) =>
-    (callback: (str: string) => void) =>
-    (rl: ReadLine) => {
-      const listener = (line: string) => {
-        if (f(line)) {
-          rl.off("line", listener);
-          callback(line);
-        }
-      };
-      rl.on("line", listener);
-    };
+  const engines = new Map<Side, Engine>();
 
   const update = (next: Game) => {
     game = next;
+    log("game %j", game);
     send(GameUpdated(game));
     Game.match({
-      created: (timestamp, _, players) => {
-        let count = 0;
-        let started = false;
+      created: (_, __, players) => {
+        engines.values().forEach(e => e.quit());
+        engines.clear();
+        const handshakes = new Map<Side, Promise<void>>();
         [Side.X, Side.O]
           .map((side) => [side, players[side]] as const)
           .forEach(([side, player]) => {
             Player.match({
-              user: () => {},
+              user: () => {
+                handshakes.set(side, Promise.resolve());
+              },
               engine: (id) => {
-                console.log(
-                  "starting instance of engine",
-                  id,
-                  "for side",
-                  side
+                const engineInfo = store.get("engines")[id];
+                const engine = new Engine(
+                  engineInfo,
+                  msvn,
+                  debug("stepkic").extend("engine").extend(side)
                 );
-                const { cwd, command, args } = store.get("engines")[id];
-                count += 1;
-                const { stdout, stdin } = spawn(command, args, {
-                  cwd,
-                  stdio: ["pipe", "pipe", "pipe"],
-                });
-                const rl = createInterface({ input: stdout });
-                engines[side] = { stdout, stdin, rl } as any;
-                until((line) => line.trim() === Msvn.expectation(msvn))(() => {
-                  count -= 1;
-                  if (count === 0 && !started) {
-                    started = true;
-                    queueMicrotask(() => update(Game.Started(timestamp, game)));
-                  }
-                })(rl);
-                rl.on("line", (line) => console.log(side, "<", line));
-                const cmd = Msvn.handshake(msvn);
-                console.log(side, ">", cmd);
-                stdin.write(`${cmd}\n`);
+                engines.set(side, engine);
+                handshakes.set(side, timeout(side)(engine.handshake()));
               },
             })(player);
           });
+
+        Promise.all(handshakes)
+          .then(() => Game.Started(Timestamp.now(), game))
+          .catch((reason: Result) => Game.Ended(Timestamp.now(), game, reason))
+          .then(update);
       },
       started: () => update(Game.MoveRequested(Timestamp.now(), game)),
       move_requested: (_, previous) => {
         const [board, side] = Game.state(previous);
-        const start = Date.now();
-        const time = 3000;
-        const end = start + time;
-        let played = false;
-        setTimeout(() => {
-          if (played) return;
-          update(Game.Ended(Timestamp.now(), game, Result.Timeout(side)));
-        }, time);
         Player.match({
           user: () => {},
           engine: () => {
-            const engine = engines[side];
-            if (engine == null || engine.stdin == null || engine.rl == null)
-              return;
-            until((line) => line.trim().startsWith("best "))((line) => {
-              if (Date.now() > end) return;
-              played = true;
-              const moveString = line.slice(5);
-              const position = Position.parse(moveString);
-              if (position != null) {
-                update(Game.attempt(position)(game));
-              } else {
-                update(
-                  Game.Ended(
-                    Timestamp.now(),
-                    game,
-                    Result.UnknownMove(side, moveString)
-                  )
-                );
-              }
-            })(engine.rl);
-            const command = ["move", str(board), side, "time", `ms:${time}`]
-              .concat(
-                Msvn.above(2)<string[]>(() => [])(() =>
-                  winLength !== size ? ["win-length", winLength.toString()] : []
-                )(msvn)
+            const engine = engines.get(side);
+            if (engine == null) return;
+            timeout(side)(
+              engine.best(
+                board,
+                side,
+                Duration.fromObject({ seconds: 3 }),
+                winLength
               )
-              .join(" ");
-            console.log(side, ">", command);
-            engine.stdin.write(`${command}\n`);
+            )
+              .then((position) => Game.attempt(position)(game))
+              .catch((reason: Result) => Game.Ended(Timestamp.now(), game, reason))
+              .then(update);
           },
         })(players[side]);
       },
       move_attempted: () => update(rules(game)),
       move_made: () => update(Game.MoveRequested(Timestamp.now(), game)),
       ended: () => {
-        [Side.X, Side.O]
-          .map((side) => [side, players[side]] as const)
-          .forEach(([side, player]) => {
-            Player.match({
-              user: () => {},
-              engine: (id) => {
-                console.log("killing instance of engine", id, "for side", side);
-                const engine = engines[side];
-                if (engine == null || engine.stdin == null || engine.rl == null)
-                  return;
-                const cmd = "quit";
-                console.log(side, ">", cmd);
-                engine.stdin.write(`${cmd}\n`);
-              },
-            })(player);
-          });
+        engines.values().forEach(e => e.quit());
+        engines.clear();
       },
     })(game);
   };
+
   const handle = ({ tag, args }: Sendable) => {
     switch (tag) {
       case "new-game-requested": {
         const [_size, _players, _winLength] = args;
+        log("new game requested %d %d %j", _size, _winLength, _players);
         size = _size;
         players = _players;
         winLength = Msvn.above(2)(() => size)(() => _winLength)(msvn);
@@ -179,6 +121,7 @@ export const coordinator = ({ send, store, msvn }: Inputs) => {
       }
       case "move-attempted": {
         const [position] = args;
+        log("move attempted %j", position);
         update(Game.MoveAttempted(Timestamp.now(), position, game));
         break;
       }
