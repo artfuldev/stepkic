@@ -9,7 +9,7 @@ export const Vow = {
     (reason: any) =>
     <T>(promise: Promise<T>) =>
       Promise.race([
-        Vow.wait(duration).then(() => Promise.reject(reason)),
         promise,
+        Vow.wait(duration).then(() => Promise.reject(reason)),
       ]),
 };
