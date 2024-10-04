@@ -16,7 +16,7 @@ export const api = (store: Store, msvn: Msvn) => {
   };
 
   const add = async (processInfo: ProcessInfo) => {
-    const engine = new Engine(processInfo, msvn, debug('engine').extend('add'));
+    const engine = new Engine(processInfo, msvn, debug('stepkic').extend('engines').extend('add'));
     const engineIdentification = await engine.identify();
     engine.quit();
     const engineInfo = { ...processInfo, ...engineIdentification };
