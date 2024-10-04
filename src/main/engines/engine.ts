@@ -8,6 +8,7 @@ const REQUIRED_KEYS = ["name", "version", "author", "url"];
 export class Engine {
   readonly #process: ChildProcessWithoutNullStreams;
   readonly #rl: Interface;
+  handshook = false;
 
   constructor(
     { cwd, command, args }: ProcessInfo,
@@ -34,12 +35,14 @@ export class Engine {
     this.#process.stdin.write(`${line}\n`);
   }
 
-  async #initialize() {
+  async handshake() {
+    if (this.handshook) return;
     return new Promise<void>((resolve, reject) => {
       this.#rl.once(
         "line",
         this.#in((answer) => {
           if (answer.trim() === Msvn.expectation(this.msvn)) {
+            this.handshook = true;
             resolve();
           } else reject(new Error(`invalid handshake: ${answer}`));
         })
@@ -49,7 +52,7 @@ export class Engine {
   }
 
   async identify() {
-    await this.#initialize();
+    await this.handshake();
     return new Promise<EngineIdentification>((resolve, reject) => {
       const map = new Map();
       const listener = this.#in((line: string) => {
