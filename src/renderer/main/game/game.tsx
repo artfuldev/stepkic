@@ -1,21 +1,11 @@
 import React, { FC, useCallback, useEffect, useState } from "react";
-import {
-  Board,
-  Game,
-  Players,
-  Position,
-  Side,
-  User,
-} from "../../../shared/model";
+import { Board, Players, Position, Side, User } from "../../../shared/model";
 import {
   MoveAttempted,
   NewGameRequested,
   Receivable,
 } from "../../../shared/messaging";
 import { GameView } from "./game-view";
-import { statusText } from "./status-text";
-import { highlightedSquares } from "./highlighted-squares";
-import { movesMade } from "./moves-made";
 
 const _players: Players = {
   [Side.X]: User.create("Player X"),
@@ -24,7 +14,6 @@ const _players: Players = {
 
 const _Game: FC = () => {
   const [size, setSize] = useState(3);
-  const [winLength, setWinLength] = useState(3);
   const [board, setBoard] = useState(Board.create(size));
   const [highlights, setHighlights] = useState<Position[]>([]);
   const [status, setStatus] = useState(`Not initialized`);
@@ -35,22 +24,33 @@ const _Game: FC = () => {
   useEffect(() => {
     window.electron.ipcRenderer.send(
       "main",
-      NewGameRequested(size, players, winLength)
+      NewGameRequested(size, players, size)
     );
 
     return window.electron.ipcRenderer.on("main", (_, message: Receivable) => {
       switch (message.tag) {
-        case "game-updated": {
-          const game = message.args[0];
-          const board = Game.board(game);
+        case "board-updated": {
+          const board = message.args[0];
           setBoard(board);
           setSize(Board.size(board));
-          setWinLength(Game.winLength(game));
-          setStatus(statusText(game));
-          setHighlights(highlightedSquares(game));
           setPlayable(false);
-          setPlayers(Game.players(game));
-          setMoves(movesMade(game));
+          break;
+        }
+        case "status-updated": {
+          setStatus(message.args[0]);
+          break;
+        }
+        case "highlights-updated": {
+          setHighlights(message.args);
+          break;
+        }
+        case "players-updated": {
+          setPlayers(message.args[0]);
+          break;
+        }
+        case "moves-updated": {
+          setMoves(message.args);
+          setPlayable(false);
           break;
         }
         case "move-requested": {
@@ -59,7 +59,7 @@ const _Game: FC = () => {
         }
       }
     });
-  }, [size, winLength]);
+  }, [size]);
   const play = useCallback(
     (position: Position) => {
       if (!playable) return;

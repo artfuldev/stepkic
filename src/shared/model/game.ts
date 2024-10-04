@@ -148,4 +148,63 @@ export const Game = {
           Game.MoveRequested(...args)
         ),
     }),
+  statusText: _match<string>({
+    created: () => `Game starting...`,
+    started: () => `${Side.X} to play :o`,
+    move_requested: (_, game): string =>
+      `Waiting for ${Game.side(game)} to move...`,
+    move_attempted: (_, position, game): string =>
+      `${Game.side(game)} attempted playing ${Position.string(position)}`,
+    move_made: (_, position, game): string =>
+      `${Game.side(game)} made move ${Position.string(position)}`,
+    ended: (_, __, result) =>
+      Result.match({
+        draw: () => `Game drawn`,
+        win: (side, positions) =>
+          `${side} won by squares ${positions.map(Position.string).join("-")}`,
+        adjudicated_draw: (adjudicator) =>
+          `Game ended in a draw by ${adjudicator}`,
+        adjudicated_win: (adjudicator, side) =>
+          `Game decided as a win for ${side} by ${adjudicator}`,
+        illegal_move: (side, position) =>
+          `${side} lost by playing an illegal move ${Position.string(
+            position
+          )}`,
+        invalid_move: (side, position) =>
+          `${side} lost by playing an invalid move ${Position.string(
+            position
+          )}`,
+        unknown_move: (side, move) =>
+          `${side} lost by playing an unknown move ${move}`,
+        timeout: (side) => `${side} lost by timing out`,
+        failure: (side, reason) => `${side} lost: ${reason}`,
+      })(result),
+  }),
+  highlights: _match<Position[]>({
+    created: () => [],
+    started: () => [],
+    move_requested: () => [],
+    move_attempted: () => [],
+    move_made: (_, position) => [position],
+    ended: (_, __, result) =>
+      Result.match({
+        draw: () => [],
+        win: (_, positions) => positions,
+        adjudicated_draw: () => [],
+        adjudicated_win: () => [],
+        illegal_move: (_, position) => [position],
+        invalid_move: (_, position) => [position],
+        unknown_move: () => [],
+        timeout: () => [],
+        failure: () => [],
+      })(result),
+  }),
+  moves: _match<Position[]>({
+    created: () => [],
+    started: () => [],
+    move_requested: (_, game): Position[] => Game.moves(game),
+    move_attempted: (_, __, game): Position[] => Game.moves(game),
+    move_made: (_, position, previous): Position[] => [...Game.moves(previous), position],
+    ended: (_, game): Position[] => Game.moves(game),
+  })
 };

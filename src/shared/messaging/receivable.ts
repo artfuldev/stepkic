@@ -1,12 +1,14 @@
-import { GameUpdated } from "./game-updated";
-import { MoveMade } from "./move-made";
+import { HighlightsUpdated } from "./highlights-updated";
+import { MovesUpdated } from "./moves-updated";
 import { MoveRequested } from "./move-requested";
-import { MovesCleared } from "./moves-cleared";
-import { PlayerUpdated } from "./player-updated";
+import { PlayersUpdated } from "./players-updated";
+import { BoardUpdated } from "./board-updated";
+import { StatusUpdated } from "./status-updated";
 
 export type Receivable =
-  | MovesCleared
-  | GameUpdated
+  | HighlightsUpdated
   | MoveRequested
-  | MoveMade
-  | PlayerUpdated;
+  | MovesUpdated
+  | BoardUpdated
+  | StatusUpdated
+  | PlayersUpdated;

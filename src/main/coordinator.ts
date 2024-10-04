@@ -12,7 +12,15 @@ import {
   Timestamp,
   User,
 } from "../shared/model";
-import { GameUpdated, Receivable, Sendable } from "../shared/messaging";
+import {
+  Receivable,
+  Sendable,
+  PlayersUpdated,
+  BoardUpdated,
+  HighlightsUpdated,
+  MovesUpdated,
+  StatusUpdated,
+} from "../shared/messaging";
 import { Store } from "./store";
 import { Engine } from "./engines/engine";
 import debug from "debug";
@@ -43,11 +51,14 @@ export const coordinator = ({ send, store, msvn }: Inputs) => {
 
   const update = (next: Game) => {
     game = next;
-    log("game %j", game);
-    send(GameUpdated(game));
     Game.match({
-      created: (_, __, players) => {
-        engines.values().forEach(e => e.quit());
+      created: (_, board, players) => {
+        send(PlayersUpdated(players));
+        send(BoardUpdated(board));
+        send(MovesUpdated());
+        send(HighlightsUpdated());
+        send(StatusUpdated(Game.statusText(game)));
+        engines.values().forEach((e) => e.quit());
         engines.clear();
         const handshakes = new Map<Side, Promise<void>>();
         [Side.X, Side.O]
@@ -70,13 +81,17 @@ export const coordinator = ({ send, store, msvn }: Inputs) => {
             })(player);
           });
 
-        Promise.all(handshakes)
+        Promise.all(handshakes.values())
           .then(() => Game.Started(Timestamp.now(), game))
           .catch((reason: Result) => Game.Ended(Timestamp.now(), game, reason))
           .then(update);
       },
-      started: () => update(Game.MoveRequested(Timestamp.now(), game)),
+      started: () => {
+        send(StatusUpdated(Game.statusText(game)));
+        update(Game.MoveRequested(Timestamp.now(), game));
+      },
       move_requested: (_, previous) => {
+        send(StatusUpdated(Game.statusText(game)));
         const [board, side] = Game.state(previous);
         Player.match({
           user: () => {},
@@ -92,15 +107,34 @@ export const coordinator = ({ send, store, msvn }: Inputs) => {
               )
             )
               .then((position) => Game.attempt(position)(game))
-              .catch((reason: Result) => Game.Ended(Timestamp.now(), game, reason))
+              .catch((reason: Result) =>
+                Game.Ended(Timestamp.now(), game, reason)
+              )
+              .then((game) => {
+                log("move made %j", game);
+                return game;
+              })
               .then(update);
           },
         })(players[side]);
       },
-      move_attempted: () => update(rules(game)),
-      move_made: () => update(Game.MoveRequested(Timestamp.now(), game)),
+      move_attempted: () => {
+        send(StatusUpdated(Game.statusText(game)));
+        update(rules(game));
+      },
+      move_made: () => {
+        send(StatusUpdated(Game.statusText(game)));
+        send(MovesUpdated(...Game.moves(game)));
+        send(BoardUpdated(Game.board(game)));
+        update(Game.MoveRequested(Timestamp.now(), game));
+      },
       ended: () => {
-        engines.values().forEach(e => e.quit());
+        send(StatusUpdated(Game.statusText(game)));
+        send(MovesUpdated(...Game.moves(game)));
+        send(BoardUpdated(Game.board(game)));
+        send(HighlightsUpdated(...Game.highlights(game)));
+        log("game ended %j", game);
+        engines.values().forEach((e) => e.quit());
         engines.clear();
       },
     })(game);
