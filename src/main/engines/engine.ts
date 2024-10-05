@@ -115,8 +115,15 @@ export class Engine {
       this.#out(command);
     });
   }
-
+  
   quit() {
     this.#out("quit");
+    if (this.#process.exitCode != null) this.#kill();
+  }
+
+  #kill() {
+    this.log("kill requested");
+    this.#process.kill();
+    this.log("killed");
   }
 }
