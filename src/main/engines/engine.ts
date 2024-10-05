@@ -89,17 +89,6 @@ export class Engine {
     winLength?: number
   ): Promise<Position> {
     await this.handshake();
-    const size = Board.size(board);
-    const command = ["move", str(board), side]
-      .concat(time != null ? ["time", `ms:${time.toMillis()}`] : [])
-      .concat(
-        Msvn.above(2)<string[]>(() => [])(() =>
-          winLength != null && winLength !== size
-            ? ["win-length", winLength.toString()]
-            : []
-        )(this.msvn)
-      )
-      .join(" ");
     const best = this.process.lines.pipe(
       skipWhile((line) => !line.startsWith("best ")),
       map((line) => line.slice(5)),
@@ -110,7 +99,18 @@ export class Engine {
           : throwError(() => Result.UnknownMove(side, move))
       )
     );
-    this.#out.next(command);
+    this.#out.next(
+      ["move", str(board), side]
+        .concat(time != null ? ["time", `ms:${time.toMillis()}`] : [])
+        .concat(
+          Msvn.above(2)<string[]>(() => [])(() =>
+            winLength != null && winLength !== Board.size(board)
+              ? ["win-length", winLength.toString()]
+              : []
+          )(this.msvn)
+        )
+        .join(" ")
+    );
     return firstValueFrom(best);
   }
 
