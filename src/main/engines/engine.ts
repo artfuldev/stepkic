@@ -40,11 +40,12 @@ export class Engine {
     private readonly log: Debugger
   ) {}
 
-  async handshake() {
+  async handshake(): Promise<void> {
     if (this.handshook) return;
     const handshake = this.process.lines.pipe(
       skipWhile((line) => line !== Msvn.expectation(this.msvn)),
-      tap(() => (this.handshook = true))
+      tap(() => (this.handshook = true)),
+      map(() => undefined)
     );
     this.process.send(Msvn.handshake(this.msvn));
     return firstValueFrom(handshake);
