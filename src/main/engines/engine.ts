@@ -60,7 +60,7 @@ export class Engine {
         this.process.lines.pipe(skipWhile((line) => line !== `identify ok`))
       ),
       map((line) => line.slice(9).split(" ")),
-      tap(([key, val]) => this.log('id %s: %s', key, val)),
+      tap(([key, val]) => this.log("id %s: %s", key, val)),
       reduce((map, [key, val]) => map.set(key, val), new Map<string, string>()),
       map(
         (map) =>
@@ -98,11 +98,15 @@ export class Engine {
       )
       .join(" ");
     const best = this.process.lines.pipe(
-      skipWhile(line => !line.startsWith('best ')),
-      map(line => line.slice(5)),
-      map(move => [Position.parse(move), move] as const),
-      switchMap(([position, move]) => position != null ? of(position) : throwError(() => Result.UnknownMove(side, move)))
-    )
+      skipWhile((line) => !line.startsWith("best ")),
+      map((line) => line.slice(5)),
+      map((move) => [Position.parse(move), move] as const),
+      switchMap(([position, move]) =>
+        position != null
+          ? of(position)
+          : throwError(() => Result.UnknownMove(side, move))
+      )
+    );
     this.process.send(command);
     return firstValueFrom(best);
   }
