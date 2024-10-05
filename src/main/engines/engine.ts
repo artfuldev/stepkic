@@ -10,6 +10,20 @@ import { Debugger } from "debug";
 import { Duration } from "luxon";
 import { str } from "../t3en/board";
 import { LineBasedProcess } from "./line-based-process";
+import {
+  filter,
+  firstValueFrom,
+  map,
+  of,
+  reduce,
+  skipWhile,
+  switchMap,
+  take,
+  takeUntil,
+  takeWhile,
+  tap,
+  throwError,
+} from "rxjs";
 
 export class Engine {
   static readonly #IDENTIFY_REQUIRED_KEYS = [
@@ -28,41 +42,40 @@ export class Engine {
 
   async handshake() {
     if (this.handshook) return;
-    return new Promise<void>((resolve) => {
-      const listener = (answer: string) => {
-        if (answer.trim() !== Msvn.expectation(this.msvn)) return;
-        this.handshook = true;
-        this.process.off(listener);
-        resolve();
-      };
-      this.process.on(listener);
-      this.process.send(Msvn.handshake(this.msvn));
-    });
+    const handshake = this.process.lines.pipe(
+      skipWhile((line) => line !== Msvn.expectation(this.msvn)),
+      tap(() => (this.handshook = true))
+    );
+    this.process.send(Msvn.handshake(this.msvn));
+    return firstValueFrom(handshake);
   }
 
   async identify(): Promise<EngineIdentification> {
     await this.handshake();
-    return new Promise((resolve, reject) => {
-      const map = new Map();
-      const listener = (line: string) => {
-        const trimmed = line.trim();
-        if (!trimmed.startsWith("identify ")) return;
-        const pruned = trimmed.slice(9);
-        if (pruned === "ok") {
-          this.process.off(listener);
-          const missing = Engine.#IDENTIFY_REQUIRED_KEYS.filter(
-            (x) => !map.has(x)
-          );
-          if (missing.length !== 0)
-            reject(new Error(`missing keys in identify: ${missing}`));
-          else resolve(Object.fromEntries(map.entries()));
-        }
-        const [key, value] = pruned.split(" ");
-        map.set(key, value);
-      };
-      this.process.on(listener);
-      this.process.send("identify");
-    });
+    const identification = this.process.lines.pipe(
+      map((line) => line.trim()),
+      filter((line) => line.startsWith("identify ")),
+      takeUntil(
+        this.process.lines.pipe(skipWhile((line) => line !== `identify ok`))
+      ),
+      map((line) => line.slice(9).split(" ")),
+      tap(([key, val]) => this.log('id %s: %s', key, val)),
+      reduce((map, [key, val]) => map.set(key, val), new Map<string, string>()),
+      map(
+        (map) =>
+          [
+            map,
+            Engine.#IDENTIFY_REQUIRED_KEYS.filter((x) => !map.has(x)),
+          ] as const
+      ),
+      switchMap(([map, missing]) =>
+        missing.length === 0
+          ? of(Object.fromEntries(map.entries()) as EngineIdentification)
+          : throwError(() => new Error(`missing keys in identify: ${missing}`))
+      )
+    );
+    this.process.send("identify");
+    return await firstValueFrom(identification);
   }
 
   async best(
@@ -83,19 +96,14 @@ export class Engine {
         )(this.msvn)
       )
       .join(" ");
-    return new Promise((resolve, reject) => {
-      const listener = (line: string) => {
-        const trimmed = line.trim();
-        if (!trimmed.startsWith("best ")) return;
-        const pruned = trimmed.slice(5);
-        const position = Position.parse(pruned);
-        this.process.off(listener);
-        if (position == null) reject(Result.UnknownMove(side, pruned));
-        else resolve(position);
-      };
-      this.process.on(listener);
-      this.process.send(command);
-    });
+    const best = this.process.lines.pipe(
+      skipWhile(line => !line.startsWith('best ')),
+      map(line => line.slice(5)),
+      map(move => [Position.parse(move), move] as const),
+      switchMap(([position, move]) => position != null ? of(position) : throwError(() => Result.UnknownMove(side, move)))
+    )
+    this.process.send(command);
+    return firstValueFrom(best);
   }
 
   quit() {

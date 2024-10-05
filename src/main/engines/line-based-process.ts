@@ -2,38 +2,29 @@ import { ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import { ProcessInfo } from "../../shared/model";
 import { createInterface, Interface } from "node:readline/promises";
 import { Debugger } from "debug";
+import { Observable, Subject } from "rxjs";
 
 export class LineBasedProcess {
   readonly #process: ChildProcessWithoutNullStreams;
   readonly #log: Debugger;
   readonly #out: Debugger;
   readonly #rl: Interface;
-  constructor(
-    { cwd, command, args }: ProcessInfo,
-    log: Debugger
-  ) {
+  readonly lines: Observable<string>;
+  constructor({ cwd, command, args }: ProcessInfo, log: Debugger) {
+    this.#log = log;
     this.#process = spawn(command, args, {
       cwd,
       stdio: ["pipe", "pipe", "pipe"],
     });
-    this.#rl = createInterface({ input: this.#process.stdout });
-    this.#log = log;
-    const _log = log.extend('<');
-    this.#out = log.extend('>');
-    this.#rl.on("line", (line: string) => _log(line));
     this.#log("started process");
-  }
-
-  on(listener: (line: string) => void) {
-    this.#rl.on("line", listener);
-    this.#log('added listener');
-    return this;
-  }
-
-  off(listener: (line: string) => void) {
-    this.#rl.off("line", listener);
-    this.#log('removed listener');
-    return this;
+    this.#rl = createInterface({ input: this.#process.stdout });
+    const _log = log.extend("<");
+    this.#out = log.extend(">");
+    const subject = new Subject<string>();
+    this.#rl.on("line", _log.bind(_log));
+    this.#rl.on("line", (line) => subject.next(line.trim()));
+    this.lines = subject.asObservable();
+    this.#log("started observing input stream");
   }
 
   send(line: string) {
