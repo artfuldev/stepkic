@@ -17,6 +17,7 @@ import {
   of,
   reduce,
   skipWhile,
+  Subject,
   switchMap,
   takeUntil,
   tap,
@@ -31,12 +32,16 @@ export class Engine {
     "url",
   ];
   handshook = false;
+  readonly #out: Subject<string>;
 
   constructor(
     private readonly process: LineBasedProcess,
     private readonly msvn: Msvn,
     private readonly log: Debugger
-  ) {}
+  ) {
+    this.#out = new Subject<string>();
+    this.#out.subscribe(this.process.send.bind(this.process));
+  }
 
   async handshake(): Promise<void> {
     if (this.handshook) return;
@@ -45,7 +50,7 @@ export class Engine {
       tap(() => (this.handshook = true)),
       map(() => undefined)
     );
-    this.process.send(Msvn.handshake(this.msvn));
+    this.#out.next(Msvn.handshake(this.msvn));
     return firstValueFrom(handshake);
   }
 
@@ -73,7 +78,7 @@ export class Engine {
           : throwError(() => new Error(`missing keys in identify: ${missing}`))
       )
     );
-    this.process.send("identify");
+    this.#out.next("identify");
     return await firstValueFrom(identification);
   }
 
@@ -105,12 +110,12 @@ export class Engine {
           : throwError(() => Result.UnknownMove(side, move))
       )
     );
-    this.process.send(command);
+    this.#out.next(command);
     return firstValueFrom(best);
   }
 
   quit() {
-    this.process.send("quit");
+    this.#out.next("quit");
     if (this.process.exitCode != null) this.process.kill();
   }
 }
