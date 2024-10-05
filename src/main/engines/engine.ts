@@ -1,60 +1,42 @@
-import { ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import {
   Board,
   EngineIdentification,
   Msvn,
   Position,
-  ProcessInfo,
   Result,
   Side,
 } from "../../shared/model";
-import { createInterface, Interface } from "node:readline/promises";
 import { Debugger } from "debug";
 import { Duration } from "luxon";
 import { str } from "../t3en/board";
+import { LineBasedProcess } from "./line-based-process";
 
 export class Engine {
-  static readonly #IDENTIFY_REQUIRED_KEYS = ["name", "version", "author", "url"];
-  readonly #process: ChildProcessWithoutNullStreams;
-  readonly #rl: Interface;
+  static readonly #IDENTIFY_REQUIRED_KEYS = [
+    "name",
+    "version",
+    "author",
+    "url",
+  ];
   handshook = false;
 
   constructor(
-    { cwd, command, args }: ProcessInfo,
+    private readonly process: LineBasedProcess,
     private readonly msvn: Msvn,
     private readonly log: Debugger
-  ) {
-    this.#process = spawn(command, args, {
-      cwd,
-      stdio: ["pipe", "pipe", "pipe"],
-    });
-    this.#rl = createInterface({ input: this.#process.stdout });
-    this.log("started process");
-  }
-
-  #in(listener: (line: string) => void) {
-    return (line: string) => {
-      this.log("< %s", line);
-      listener(line);
-    };
-  }
-
-  #out(line: string) {
-    this.log("> %s", line);
-    this.#process.stdin.write(`${line}\n`);
-  }
+  ) {}
 
   async handshake() {
     if (this.handshook) return;
     return new Promise<void>((resolve) => {
-      const listener = this.#in((answer) => {
+      const listener = (answer: string) => {
         if (answer.trim() !== Msvn.expectation(this.msvn)) return;
         this.handshook = true;
-        this.#rl.off("line", listener);
+        this.process.off(listener);
         resolve();
-      });
-      this.#rl.on("line", listener);
-      this.#out(Msvn.handshake(this.msvn));
+      };
+      this.process.on(listener);
+      this.process.send(Msvn.handshake(this.msvn));
     });
   }
 
@@ -62,12 +44,12 @@ export class Engine {
     await this.handshake();
     return new Promise((resolve, reject) => {
       const map = new Map();
-      const listener = this.#in((line: string) => {
+      const listener = (line: string) => {
         const trimmed = line.trim();
         if (!trimmed.startsWith("identify ")) return;
         const pruned = trimmed.slice(9);
         if (pruned === "ok") {
-          this.#rl.off("line", listener);
+          this.process.off(listener);
           const missing = Engine.#IDENTIFY_REQUIRED_KEYS.filter(
             (x) => !map.has(x)
           );
@@ -77,9 +59,9 @@ export class Engine {
         }
         const [key, value] = pruned.split(" ");
         map.set(key, value);
-      });
-      this.#rl.on("line", listener);
-      this.#out("identify");
+      };
+      this.process.on(listener);
+      this.process.send("identify");
     });
   }
 
@@ -102,28 +84,22 @@ export class Engine {
       )
       .join(" ");
     return new Promise((resolve, reject) => {
-      const listener = this.#in((line: string) => {
+      const listener = (line: string) => {
         const trimmed = line.trim();
         if (!trimmed.startsWith("best ")) return;
         const pruned = trimmed.slice(5);
         const position = Position.parse(pruned);
-        this.#rl.off("line", listener);
+        this.process.off(listener);
         if (position == null) reject(Result.UnknownMove(side, pruned));
         else resolve(position);
-      });
-      this.#rl.on("line", listener);
-      this.#out(command);
+      };
+      this.process.on(listener);
+      this.process.send(command);
     });
   }
-  
-  quit() {
-    this.#out("quit");
-    if (this.#process.exitCode != null) this.#kill();
-  }
 
-  #kill() {
-    this.log("kill requested");
-    this.#process.kill();
-    this.log("killed");
+  quit() {
+    this.process.send("quit");
+    if (this.process.exitCode != null) this.process.kill();
   }
 }

@@ -25,6 +25,7 @@ import { Store } from "./store";
 import { Engine } from "./engines/engine";
 import debug from "debug";
 import { Duration } from "luxon";
+import { LineBasedProcess } from "./engines/line-based-process";
 
 type Inputs = {
   send: (r: Receivable) => void;
@@ -70,11 +71,12 @@ export const coordinator = ({ send, store, msvn }: Inputs) => {
               },
               engine: (id) => {
                 const engineInfo = store.get("engines")[id];
-                const engine = new Engine(
+                const log = debug("stepkic").extend("engine").extend(side);
+                const process = new LineBasedProcess(
                   engineInfo,
-                  msvn,
-                  debug("stepkic").extend("engine").extend(side)
+                  log.extend("process")
                 );
+                const engine = new Engine(process, msvn, log);
                 engines.set(side, engine);
                 handshakes.set(side, timeout(side)(engine.handshake()));
               },
