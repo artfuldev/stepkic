@@ -1,13 +1,11 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { and, draw, play, wins } from "../shared/rules";
-import { Vow } from "../shared/vow";
 import {
   Board,
   Game,
   Msvn,
   Player,
   Players,
-  Result,
   Side,
   Timestamp,
   User,
@@ -33,9 +31,6 @@ type Inputs = {
   msvn: Msvn;
 };
 
-const timeout = (side: Side) =>
-  Vow.timeout(Duration.fromObject({ seconds: 3 }))(Result.Timeout(side));
-
 const log = debug("stepkic").extend("coordinator");
 
 export const coordinator = ({ send, store, msvn }: Inputs) => {
@@ -52,6 +47,7 @@ export const coordinator = ({ send, store, msvn }: Inputs) => {
 
   const update = (next: Game) => {
     game = next;
+    log("%j", game);
     Game.match({
       created: (_, board, players) => {
         send(PlayersUpdated(players));
@@ -78,14 +74,14 @@ export const coordinator = ({ send, store, msvn }: Inputs) => {
                 );
                 const engine = new Engine(process, msvn, log);
                 engines.set(side, engine);
-                handshakes.set(side, timeout(side)(engine.handshake()));
+                handshakes.set(side, engine.handshake());
               },
             })(player);
           });
 
         Promise.all(handshakes.values())
           .then(() => Game.Started(Timestamp.now(), game))
-          .catch((reason: Result) => Game.Ended(Timestamp.now(), game, reason))
+          .catch((result) => Game.Ended(Timestamp.now(), game, result))
           .then(update);
       },
       started: () => {
@@ -100,22 +96,10 @@ export const coordinator = ({ send, store, msvn }: Inputs) => {
           engine: () => {
             const engine = engines.get(side);
             if (engine == null) return;
-            timeout(side)(
-              engine.best(
-                board,
-                side,
-                Duration.fromObject({ seconds: 3 }),
-                winLength
-              )
-            )
+            engine
+              .best(board, side, Duration.fromObject({ seconds: 3 }), winLength)
               .then((position) => Game.attempt(position)(game))
-              .catch((reason: Result) =>
-                Game.Ended(Timestamp.now(), game, reason)
-              )
-              .then((game) => {
-                log("move made %j", game);
-                return game;
-              })
+              .catch((result) => Game.Ended(Timestamp.now(), game, result))
               .then(update);
           },
         })(players[side]);
@@ -135,7 +119,6 @@ export const coordinator = ({ send, store, msvn }: Inputs) => {
         send(MovesUpdated(...Game.moves(game)));
         send(BoardUpdated(Game.board(game)));
         send(HighlightsUpdated(...Game.highlights(game)));
-        log("game ended %j", game);
         engines.values().forEach((e) => e.quit());
         engines.clear();
       },

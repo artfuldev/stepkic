@@ -22,6 +22,7 @@ import {
   takeUntil,
   tap,
   throwError,
+  timeout,
 } from "rxjs";
 
 export class Engine {
@@ -43,18 +44,19 @@ export class Engine {
     this.#out.subscribe(this.process.send.bind(this.process));
   }
 
-  async handshake(): Promise<void> {
+  async handshake(side = Side.X, wait = Duration.fromObject({ seconds: 3 })): Promise<void> {
     if (this.handshook) return;
     const handshake = this.process.lines.pipe(
       skipWhile((line) => line !== Msvn.expectation(this.msvn)),
       tap(() => (this.handshook = true)),
-      map(() => undefined)
+      map(() => undefined),
+      timeout({ first: wait.toMillis(), with: () => throwError(() => Result.Timeout(side)) })
     );
     this.#out.next(Msvn.handshake(this.msvn));
     return firstValueFrom(handshake);
   }
 
-  async identify(): Promise<EngineIdentification> {
+  async identify(wait = Duration.fromObject({ seconds: 3 })): Promise<EngineIdentification> {
     await this.handshake();
     const identification = this.process.lines.pipe(
       map((line) => line.trim()),
@@ -76,7 +78,8 @@ export class Engine {
         missing.length === 0
           ? of(Object.fromEntries(map.entries()) as EngineIdentification)
           : throwError(() => new Error(`missing keys in identify: ${missing}`))
-      )
+      ),
+      timeout({ first: wait.toMillis() }),
     );
     this.#out.next("identify");
     return await firstValueFrom(identification);
@@ -97,7 +100,11 @@ export class Engine {
         position != null
           ? of(position)
           : throwError(() => Result.UnknownMove(side, move))
-      )
+      ),
+      timeout({
+        first: time != null ? time.toMillis() : Number.MAX_SAFE_INTEGER,
+        with: () => throwError(() => Result.Timeout(side)),
+      })
     );
     this.#out.next(
       ["move", str(board), side]
