@@ -14,7 +14,7 @@ import { Duration } from "luxon";
 import { str } from "../t3en/board";
 
 export class Engine {
-  static readonly IDENTIFY_REQUIRED_KEYS = ["name", "version", "author", "url"];
+  static readonly #IDENTIFY_REQUIRED_KEYS = ["name", "version", "author", "url"];
   readonly #process: ChildProcessWithoutNullStreams;
   readonly #rl: Interface;
   handshook = false;
@@ -68,7 +68,7 @@ export class Engine {
         const pruned = trimmed.slice(9);
         if (pruned === "ok") {
           this.#rl.off("line", listener);
-          const missing = Engine.IDENTIFY_REQUIRED_KEYS.filter(
+          const missing = Engine.#IDENTIFY_REQUIRED_KEYS.filter(
             (x) => !map.has(x)
           );
           if (missing.length !== 0)
